@@ -3,6 +3,7 @@
 import pytest
 
 from claim_intake.contracts import (
+    ClaimStatus,
     Contradiction,
     CoverageLine,
     IncidentType,
@@ -19,6 +20,7 @@ from claim_intake.rules import (
     coverage_lines,
     follow_up_days,
     indicators,
+    initial_status,
     injury_present,
     missing_information,
     risk_level,
@@ -321,3 +323,20 @@ def test_ac_3_7_legal_representation_is_high_risk_and_adds_special_review():
     assert RiskIndicator.LEGAL_REPRESENTATION_MENTIONED in found
     assert level == RiskLevel.HIGH
     assert Team.SPECIAL_REVIEW in routed
+
+
+# --- US5: initial claim status (FR-029) -----------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    ("level", "missing", "privacy_review", "expected"),
+    [
+        (RiskLevel.HIGH, [], False, ClaimStatus.ESCALATED),
+        (RiskLevel.HIGH, [MissingItem.POLICE_REPORT], False, ClaimStatus.ESCALATED),
+        (None, [], True, ClaimStatus.ESCALATED),
+        (RiskLevel.MEDIUM, [MissingItem.POLICE_REPORT], False, ClaimStatus.AWAITING_INFORMATION),
+        (RiskLevel.LOW, [], False, ClaimStatus.SUBMITTED),
+    ],
+)
+def test_ac_5_4_initial_status_priority(level, missing, privacy_review, expected):
+    assert initial_status(level, missing, privacy_review=privacy_review) == expected

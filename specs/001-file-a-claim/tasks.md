@@ -313,7 +313,7 @@ CLI presents the menu.
 
 ### Tests for User Story 5 (write first; they must fail)
 
-- [ ] T027 [P] [US5] Write the storage and status tests:
+- [X] T027 [P] [US5] Write the storage and status tests:
   - in `tests/unit/test_storage.py`:
     - `test_ac_5_4_claim_numbers_are_sequential_per_year_and_unique_across_restarts` (a new
       `ClaimStore` instance continues the sequence)
@@ -321,7 +321,7 @@ CLI presents the menu.
     - `test_ac_5_4_report_file_named_claim_id_and_timestamp`
   - in `tests/unit/test_rules.py`: `test_ac_5_4_initial_status_priority_*` (HIGH → ESCALATED;
     missing info → AWAITING_INFORMATION; otherwise SUBMITTED)
-- [ ] T028 [P] [US5] Write the orchestration tests in `tests/integration/test_file_claim.py`, with
+- [X] T028 [P] [US5] Write the orchestration tests in `tests/integration/test_file_claim.py`, with
   all four agents on `structured_model` and `fixed_now`:
   - `test_ac_5_3_progress_callback_reports_four_steps_in_order`
   - `test_ac_5_4_hit_and_run_with_injury_saves_escalated_record_and_report`
@@ -341,9 +341,9 @@ CLI presents the menu.
     duration_ms, error_category`)
   - `test_ac_5_13_event_log_contains_no_narrative_words` ("pickup" and "bumper" appear in no
     line)
-- [ ] T029 [P] [US5] Write the config test in `tests/unit/test_config.py`:
+- [X] T029 [P] [US5] Write the config test in `tests/unit/test_config.py`:
   `test_ac_5_7_missing_key_or_model_raises_config_error_with_setup_message`
-- [ ] T030 [P] [US5] Write the CLI tests in `tests/integration/test_cli.py`, with scripted input
+- [X] T030 [P] [US5] Write the CLI tests in `tests/integration/test_cli.py`, with scripted input
   (`monkeypatch` on `builtins.input`) and captured output:
   - `test_ac_5_1_menu_shows_header_notice_and_five_options`
   - `test_ac_5_1_options_2_to_4_say_coming_soon`
