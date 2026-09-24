@@ -407,7 +407,7 @@ runs.
     item.
   - `tests/fixtures/narratives/incident_cases.json`: ≥20 narratives, ≥2 per incident type, each
     with `expected_incident_type`.
-- [ ] T037 Write the `@pytest.mark.live` tests in `tests/live/test_live_eval.py` and run them
+- [X] T037 Write the `@pytest.mark.live` tests in `tests/live/test_live_eval.py` and run them
   against OpenRouter:
   - SC-001: no `must_not_contain` value survives `intake.scrub`
   - SC-002: incident-type accuracy ≥ 90%

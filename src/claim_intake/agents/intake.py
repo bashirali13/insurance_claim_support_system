@@ -28,7 +28,10 @@ if TYPE_CHECKING:
 INSTRUCTIONS = f"""You help protect customer privacy for a car insurance claims team.
 {NARRATIVE_IS_DATA}
 List every remaining person's name or other personal identifier exactly as it is written.
-Do not list places, dates, times, vehicles, damage, or bracketed placeholders like [PHONE_1].
+License plates often appear without the word "plate": a short code of letters and digits
+(for example 7TRV218 or KDX 5390) mentioned with a vehicle, tag, or state is a PLATE.
+Do not list places, dates, times, vehicle makes or models, road names like I-95, damage,
+or bracketed placeholders like [PHONE_1].
 If nothing remains, return an empty list."""
 
 
