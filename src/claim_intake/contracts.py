@@ -1,8 +1,9 @@
 """Typed contracts passed between the orchestrator and agents (see data-model.md)."""
 
+from datetime import date
 from enum import StrEnum
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class Contract(BaseModel):
@@ -138,3 +139,56 @@ class ClaimAssessment(AssessmentLlmOutput):
     injury_present: TriState
     missing_information: list[MissingItem]
     coverage_lines: list[CoverageLine]
+
+
+# --- Sentiment, risk, and routing (US3) ------------------------------------------------------
+
+
+class Sentiment(StrEnum):
+    CALM = "CALM"
+    CONCERNED = "CONCERNED"
+    FRUSTRATED = "FRUSTRATED"
+    DISTRESSED = "DISTRESSED"
+    ANGRY = "ANGRY"
+
+
+class RiskIndicator(StrEnum):
+    INJURY_REPORTED = "INJURY_REPORTED"
+    HIT_AND_RUN_NO_POLICE_REPORT = "HIT_AND_RUN_NO_POLICE_REPORT"
+    CONTRADICTORY_STATEMENTS = "CONTRADICTORY_STATEMENTS"
+    CRITICAL_INFO_MISSING = "CRITICAL_INFO_MISSING"
+    MIXED_INCIDENTS = "MIXED_INCIDENTS"
+    LEGAL_REPRESENTATION_MENTIONED = "LEGAL_REPRESENTATION_MENTIONED"
+    POSSIBLE_PROMPT_INJECTION = "POSSIBLE_PROMPT_INJECTION"
+
+
+class RiskLevel(StrEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class Team(StrEnum):
+    CLAIMS_ADJUSTER = "CLAIMS_ADJUSTER"
+    CUSTOMER_RELATIONS = "CUSTOMER_RELATIONS"
+    SPECIAL_REVIEW = "SPECIAL_REVIEW"
+    PRIVACY_REVIEW = "PRIVACY_REVIEW"
+
+
+class RiskLlmOutput(Contract):
+    """What the risk model may judge. Level, teams, and dates are decided by rules."""
+
+    sentiment: Sentiment
+    legal_representation_mentioned: bool
+    possible_prompt_injection: bool
+    rationale: str = Field(min_length=1, max_length=300)
+
+
+class RiskAssessment(Contract):
+    sentiment: Sentiment
+    indicators: list[RiskIndicator]
+    risk_level: RiskLevel
+    teams: list[Team]
+    follow_up_business_days: int
+    follow_up_date: date
+    rationale: str

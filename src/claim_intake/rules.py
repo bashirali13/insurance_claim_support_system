@@ -2,9 +2,15 @@
 
 from claim_intake.contracts import (
     AssessmentLlmOutput,
+    ClaimAssessment,
     CoverageLine,
     IncidentType,
     MissingItem,
+    RiskIndicator,
+    RiskLevel,
+    RiskLlmOutput,
+    Sentiment,
+    Team,
     TriState,
     UmUimSubtype,
 )
@@ -79,3 +85,83 @@ def coverage_lines(facts: AssessmentLlmOutput) -> list[CoverageLine]:
     if facts.customer_side_injured == TriState.YES:
         lines.add(CoverageLine.PIP_MEDPAY)
     return [line for line in CoverageLine if line in lines]
+
+
+# --- Risk and routing (FR-016 to FR-020) ------------------------------------------------------
+
+# FR-017a: checked by code so detection never depends only on the model being attacked.
+# Phrases common in ordinary stories (e.g. "act as") are deliberately excluded.
+INJECTION_PHRASES = (
+    "ignore previous instructions",
+    "ignore your instructions",
+    "ignore your rules",
+    "disregard your rules",
+    "system prompt",
+    "you are now an",
+)
+
+ALWAYS_HIGH = {
+    RiskIndicator.LEGAL_REPRESENTATION_MENTIONED,
+    RiskIndicator.POSSIBLE_PROMPT_INJECTION,
+}
+UPSET = {Sentiment.DISTRESSED, Sentiment.ANGRY}
+
+
+def has_injection_phrase(text: str) -> bool:
+    lowered = text.lower()
+    return any(phrase in lowered for phrase in INJECTION_PHRASES)
+
+
+def indicators(
+    assessment: ClaimAssessment, judged: RiskLlmOutput, text: str
+) -> list[RiskIndicator]:
+    """Fact-based indicators come from rules; only two may come from the model (FR-017)."""
+    found: set[RiskIndicator] = set()
+    if assessment.injury_present == TriState.YES:
+        found.add(RiskIndicator.INJURY_REPORTED)
+    if (
+        assessment.um_uim_subtype == UmUimSubtype.HIT_AND_RUN
+        and assessment.police_report_mentioned != TriState.YES
+    ):
+        found.add(RiskIndicator.HIT_AND_RUN_NO_POLICE_REPORT)
+    if assessment.contradictions:
+        found.add(RiskIndicator.CONTRADICTORY_STATEMENTS)
+    if {MissingItem.INCIDENT_DATE, MissingItem.LOCATION} & set(assessment.missing_information):
+        found.add(RiskIndicator.CRITICAL_INFO_MISSING)
+    if assessment.incident_type == IncidentType.MIXED:
+        found.add(RiskIndicator.MIXED_INCIDENTS)
+    if judged.legal_representation_mentioned:
+        found.add(RiskIndicator.LEGAL_REPRESENTATION_MENTIONED)
+    if judged.possible_prompt_injection or has_injection_phrase(text):
+        found.add(RiskIndicator.POSSIBLE_PROMPT_INJECTION)
+    return [indicator for indicator in RiskIndicator if indicator in found]
+
+
+def risk_level(found: list[RiskIndicator]) -> RiskLevel:
+    """FR-018. Sentiment is deliberately not an input."""
+    if ALWAYS_HIGH & set(found) or len(found) >= 2:
+        return RiskLevel.HIGH
+    if len(found) == 1:
+        return RiskLevel.MEDIUM
+    return RiskLevel.LOW
+
+
+def teams(sentiment: Sentiment, found: list[RiskIndicator]) -> list[Team]:
+    """FR-019: the adjuster always; plus Customer Relations and Special Review when warranted."""
+    routed = [Team.CLAIMS_ADJUSTER]
+    if sentiment in UPSET:
+        routed.append(Team.CUSTOMER_RELATIONS)
+    if ALWAYS_HIGH & set(found):
+        routed.append(Team.SPECIAL_REVIEW)
+    return routed
+
+
+def follow_up_days(
+    assessment: ClaimAssessment, found: list[RiskIndicator], level: RiskLevel
+) -> int:
+    """FR-020: one business day when someone may be hurt or risk is high; otherwise two."""
+    injury_contradicted = any(c.about_injury for c in assessment.contradictions)
+    urgent = (
+        RiskIndicator.INJURY_REPORTED in found or injury_contradicted or level == RiskLevel.HIGH
+    )
+    return 1 if urgent else 2

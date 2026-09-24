@@ -240,7 +240,7 @@ date.
 - [X] T018 [US3] Implement `src/claim_intake/dates.py`:
   `add_business_days(start: date, n: int) -> date`, which never counts the start date and skips
   Saturday and Sunday (research R10).
-- [ ] T019 [US3] Implement in `src/claim_intake/rules.py`:
+- [X] T019 [US3] Implement in `src/claim_intake/rules.py`:
   - `INJECTION_PHRASES` (FR-017a list, excluding "act as")
   - `indicators(assessment, llm_out, text)`, `risk_level(indicators)`, `teams(sentiment,
     indicators)`, and `follow_up_days(assessment, indicators, level)`, per the data-model rule
