@@ -226,3 +226,9 @@ output/*
 
 # Text-free event log (FR-033 in specs/001-file-a-claim)
 logs/
+
+# OS and editor temp files
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp

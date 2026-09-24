@@ -35,11 +35,11 @@ Structure).
 
 **Purpose**: test infrastructure and a clean starting point.
 
-- [ ] T001 Remove `tests/unit/test_smoke.py`. It has no acceptance criterion, and the constitution
+- [X] T001 Remove `tests/unit/test_smoke.py`. It has no acceptance criterion, and the constitution
   (Principle II) treats a test without an AC as a defect.
-- [ ] T002 Create the directories `src/claim_intake/agents/` (with an empty `__init__.py`),
+- [X] T002 Create the directories `src/claim_intake/agents/` (with an empty `__init__.py`),
   `tests/live/` (with `__init__.py`), and `tests/fixtures/narratives/`.
-- [ ] T003 Create `tests/conftest.py` with:
+- [X] T003 Create `tests/conftest.py` with:
   - `pydantic_ai.models.ALLOW_MODEL_REQUESTS = False` set at import, so real model calls fail loudly
     (research R4)
   - a `fixed_now` fixture returning `datetime(2026, 9, 24, 10, 15)` (a Thursday)
@@ -58,7 +58,7 @@ Structure).
 
 **Purpose**: the one piece every story's contracts share.
 
-- [ ] T004 Create `src/claim_intake/contracts.py` with the base class
+- [X] T004 Create `src/claim_intake/contracts.py` with the base class
   `class Contract(BaseModel): model_config = ConfigDict(frozen=True, extra="forbid")`. It must stay
   this minimal: enums and models are added only when a failing test needs them (plan →
   Implementation Order).
