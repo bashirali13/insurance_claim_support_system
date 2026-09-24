@@ -30,6 +30,7 @@ terminal menu. Follow docs/user-experience.md §1–4 and §8, and the constitut
 - Q: Should the system keep its own activity log, recording each step's timing and outcome without any claim text? → A: Yes. A text-free event log (`logs/events.log`, gitignored): one line per step with timestamp, claim number, step, outcome status, duration, and error category; never narrative, facts, or model output.
 - Post-approval amendment (from `/speckit-analyze`, user-approved): added AC-3.10 (narrative sent as tagged data) and AC-5.13 (event-log contents); extended AC-1.4 (placeholder suggestions ignored), AC-3.3 (contradicted injury → 1 day), AC-3.4 (HIGH → 1 day), AC-3.7 (legal representation → Special Review), AC-4.1 (MIXED reply line), AC-5.1 (invalid menu input), AC-5.6 (length after trimming); AC-4.6 and FR-025 now cover the claim record and event log. Every behavior in the design now has an acceptance criterion.
 - Q: Should a stolen-car claim ask the customer for a "description of damage"? → A: No. `THEFT` is exempt from the damage-description checklist item (FR-013, AC-2.6); the theft itself is the loss.
+- Implementation note (US3): AC-3.4 extended so each fact-based indicator's derivation (FR-017) has an acceptance criterion; previously only `INJURY_REPORTED` (AC-3.3) did.
 - Q: What happens when a non-claim request (e.g., billing change) is entered through "File a new claim"? → A: Accepted in phase 001 as an `UNKNOWN` claim asking what happened; phase 002 "Get help" handles out-of-scope requests.
 
 ## User Scenarios & Testing *(mandatory)*
@@ -167,6 +168,9 @@ plus a fixed "today" date. Check the sentiment, indicators, risk level, teams, a
 4. **AC-3.4**: **Given** the risk indicators found, **When** the risk level is set, **Then** it
    follows FR-018 exactly: none → `LOW`; one → `MEDIUM`; two or more, or any "always high"
    indicator → `HIGH`. **And** a `HIGH`-risk claim gets a 1-business-day follow-up promise.
+   **And** the fact-based indicators are derived exactly per FR-017: hit-and-run without a police
+   report, any contradiction, a missing date or location, and a `MIXED` incident each add their
+   indicator.
 5. **AC-3.5**: **Given** two claims with identical facts and indicators but sentiments of `CALM`
    and `ANGRY`, **When** each is routed, **Then** both receive the same risk level.
 6. **AC-3.6**: **Given** a `DISTRESSED` or `ANGRY` customer, **When** the claim is routed, **Then**

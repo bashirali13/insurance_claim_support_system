@@ -224,6 +224,8 @@ date.
   - `test_ac_3_7_legal_representation_is_high_risk_and_adds_special_review`
   - `test_ac_3_3_contradicted_injury_gets_one_business_day`
   - `test_ac_3_4_high_risk_gets_one_business_day`
+  - `test_ac_3_4_fact_based_indicators_*` (parametrized: hit-and-run without a police report,
+    a contradiction, a missing date or location, a MIXED incident)
 - [ ] T017 [P] [US3] Write the risk-agent tests in `tests/unit/test_risk.py`, using
   `structured_model(RiskLlmOutput(...))` and `fixed_now`:
   - `test_ac_3_1_sentiment_is_one_of_five_values`
