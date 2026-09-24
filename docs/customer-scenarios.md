@@ -55,11 +55,10 @@ A police report is *not* required: no one fled and no one was hurt (AC-2.6 negat
 
 | Incident | Coverage lines | Missing | Indicators → risk | Teams, follow-up | Status |
 |---|---|---|---|---|---|
-| `THEFT` | Comprehensive | none\* | none → LOW | Adjuster, Mon Sep 28 | `SUBMITTED` |
+| `THEFT` | Comprehensive | none | none → LOW | Adjuster, Mon Sep 28 | `SUBMITTED` |
 
-\* Only if the model records something as the damage (e.g., "whole vehicle stolen"). Under the
-current checklist, an empty damage list adds "Description of damage". See the open question under
-S04.
+Thefts are exempt from "description of damage", because the theft itself is the loss (FR-013,
+AC-2.6).
 
 #### S04: Car stolen, no police report yet
 > Someone stole my car from the Walmart parking lot on Grand Blvd last night around 9pm. I haven't
@@ -69,9 +68,7 @@ S04.
 |---|---|---|---|---|---|
 | `THEFT` | Comprehensive | Police report | none → LOW | Adjuster, Mon Sep 28 | `AWAITING_INFORMATION` |
 
-The damage description isn't required separately for a theft whose "damage" is the whole car. If
-the model returns no `damage_areas`, DAMAGE_DESCRIPTION is also listed. **Watch item**: decide in
-testing whether that reads well to a customer.
+Only the police report is missing. Thefts never ask for a damage description (FR-013).
 
 #### S05: Keyed paint and slashed tire
 > Sometime Monday night someone keyed the whole driver side of my car and slashed a tire while it
@@ -297,9 +294,9 @@ acceptable in v1 (spec assumption).
 #### S28: Not a claim at all
 > I want to change my billing date and update my address.
 
-**Expected in phase 001:** filed as `UNKNOWN`, asking what happened. **Gap to raise:** this isn't a
-claim, so phase 002's "Get help" should redirect out-of-scope requests. Consider whether option 1
-should too.
+**Expected in phase 001 (accepted):** filed as `UNKNOWN`, with "what happened" missing; an adjuster
+follows up. **Decided:** out-of-scope requests are handled in phase 002 ("Get help" redirects them,
+see E10). Option 1 doesn't pre-screen for non-claims in this phase.
 
 #### Input limits (no model call)
 

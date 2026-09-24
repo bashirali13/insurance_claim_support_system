@@ -29,6 +29,8 @@ terminal menu. Follow docs/user-experience.md §1–4 and §8, and the constitut
 - Q: When a customer describes two unrelated incidents (`MIXED`), should the system create one claim or ask them to refile separately? → A: Create one claim routed to Claims Adjuster; the reply says an adjuster will help separate the incidents and does not ask the customer to refile.
 - Q: Should the system keep its own activity log, recording each step's timing and outcome without any claim text? → A: Yes. A text-free event log (`logs/events.log`, gitignored): one line per step with timestamp, claim number, step, outcome status, duration, and error category; never narrative, facts, or model output.
 - Post-approval amendment (from `/speckit-analyze`, user-approved): added AC-3.10 (narrative sent as tagged data) and AC-5.13 (event-log contents); extended AC-1.4 (placeholder suggestions ignored), AC-3.3 (contradicted injury → 1 day), AC-3.4 (HIGH → 1 day), AC-3.7 (legal representation → Special Review), AC-4.1 (MIXED reply line), AC-5.1 (invalid menu input), AC-5.6 (length after trimming); AC-4.6 and FR-025 now cover the claim record and event log. Every behavior in the design now has an acceptance criterion.
+- Q: Should a stolen-car claim ask the customer for a "description of damage"? → A: No. `THEFT` is exempt from the damage-description checklist item (FR-013, AC-2.6); the theft itself is the loss.
+- Q: What happens when a non-claim request (e.g., billing change) is entered through "File a new claim"? → A: Accepted in phase 001 as an `UNKNOWN` claim asking what happened; phase 002 "Get help" handles out-of-scope requests.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -121,7 +123,9 @@ contradictions, and coverage lines.
    date, location, or police report mentioned, **When** it is assessed, **Then** incident date,
    location, and police report each appear in the missing-information list, determined by the
    collision checklist (FR-013). **And given** a collision with no other party and no injury,
-   **Then** police report is *not* listed as missing.
+   **Then** police report is *not* listed as missing. **And given** a `THEFT` narrative with no damage
+   described, **Then** description of damage is *not* listed as missing, but police report is
+   (when not mentioned).
 7. **AC-2.7**: **Given** a narrative containing "nobody was hurt" and later "my passenger went to
    the ER", **When** it is assessed, **Then** a contradiction is recorded that quotes both
    statements.
@@ -347,7 +351,7 @@ answers. Check the terminal output, the saved claim record, and the saved report
 
   | Incident type | Required facts |
   |---|---|
-  | All types | incident date, location, description of damage |
+  | All types | incident date, location, description of damage (except `THEFT`, where the vehicle or items taken are the loss) |
   | `COLLISION` | + whether another party was involved; + police report if another driver fled or anyone was injured |
   | `THEFT` | + police report |
   | `VANDALISM` | + police report |

@@ -154,6 +154,7 @@ The rule tables are also tested as pure functions.
   - `test_ac_2_6_hit_and_run_collision_missing_date_location_police_report`
   - `test_ac_2_6_solo_collision_without_injury_does_not_require_police_report`
   - `test_ac_2_6_theft_requires_police_report`
+  - `test_ac_2_6_theft_does_not_require_damage_description`
   - `test_ac_2_6_unknown_requires_what_happened`
   - `test_ac_2_6_mixed_has_no_missing_items`
   - `test_ac_2_8_coverage_lines_*`: parametrized over every row of the data-model coverage-rule

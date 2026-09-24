@@ -92,7 +92,7 @@ orientation and are **not** implemented in this phase.
 #### Missing-information checklist (FR-013)
 | Incident type | Missing if… |
 |---|---|
-| all except `UNKNOWN`/`MIXED` | `incident_date` is None → `INCIDENT_DATE`; `location` is None → `LOCATION`; `damage_areas` empty → `DAMAGE_DESCRIPTION` |
+| all except `UNKNOWN`/`MIXED` | `incident_date` is None → `INCIDENT_DATE`; `location` is None → `LOCATION`; `damage_areas` empty → `DAMAGE_DESCRIPTION` (**not for `THEFT`**) |
 | `COLLISION` | + `other_party_involved` = `UNKNOWN` → `OTHER_PARTY_INVOLVEMENT`; + `POLICE_REPORT` if (`um_uim_subtype` = `HIT_AND_RUN` **or** `injury_present` = `YES`) **and** `police_report_mentioned` ≠ `YES` |
 | `THEFT`, `VANDALISM` | + `POLICE_REPORT` if `police_report_mentioned` ≠ `YES` |
 | `UNKNOWN` | `WHAT_HAPPENED` always; + `INCIDENT_DATE`, `LOCATION` if None |
