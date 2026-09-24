@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Claude Code local settings (may hold personal permissions/tokens)
+.claude/settings.local.json
+
+# Generated claim reports (curated samples live in docs/samples/)
+output/*
+!output/.gitkeep
