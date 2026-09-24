@@ -388,7 +388,7 @@ CLI presents the menu.
   - In `pyproject.toml`, replace the `claim-intake` script with
     `claim-support = "claim_intake.cli:main"`, and remove the placeholder `main` from
     `src/claim_intake/__init__.py`.
-- [ ] T035 [US5] Refactor pass on `orchestration.py`, `storage.py`, and `cli.py`, keeping the suite
+- [X] T035 [US5] Refactor pass on `orchestration.py`, `storage.py`, and `cli.py`, keeping the suite
   green. Add `uv run claim-support` to the Commands section of `CLAUDE.md`.
 
 **Checkpoint**: US5 is complete. The full `uv run pytest` is green, and `uv run claim-support`

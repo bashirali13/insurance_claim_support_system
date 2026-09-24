@@ -20,6 +20,7 @@ uv run pytest -m live        # tests that call the real model via OpenRouter
 uv run pytest -k ac_2_3      # tests for one acceptance criterion
 uv run ruff check .          # lint
 uv run ruff format .         # format
+uv run claim-support         # run the terminal app (needs .env)
 ```
 
 Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`. Never commit `.env`.
