@@ -43,7 +43,7 @@ Create an AI car insurance claim support coordinator capable of:
 
 **Claim support only.** Out of scope: payments, billing, policy changes, rentals, towing, repair-shop booking, claim cancellation, and multi-turn conversations. Out-of-scope requests get a polite reply that points to the right channel.
 
-The full customer-facing walkthrough, with terminal mockups and what happens behind the scenes, is in [`docs/user-experience.md`](docs/user-experience.md).
+The full customer-facing walkthrough, with terminal mockups and what happens behind the scenes, is in [`docs/user-experience.md`](user-experience.md).
 
 ## Coverage Baseline and Incident Types (Car Only)
 

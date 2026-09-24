@@ -3,7 +3,7 @@
 A car insurance claim automation customer support system. Customers use a terminal menu to file a
 new claim, check a claim's status, add or correct details on an existing claim, or report a
 problem that is routed to the correct human team. Scope and background live in
-`insurance-claim-intake-automation-outline.md`.
+`docs/project-outline.md`.
 
 ## Core Principles
 
