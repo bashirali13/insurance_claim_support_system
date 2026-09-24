@@ -39,9 +39,9 @@ Create an AI car insurance claim support coordinator capable of:
 | 1 | File a new claim | Free-text description of what happened | Full pipeline; creates a new claim record and ID |
 | 2 | Check claim status | Claim ID | Deterministic lookup; plain-language status reply with no model call required |
 | 3 | Add or correct details | Claim ID + free text | Scrubs, assesses the update against the existing record, flags new contradictions, appends to claim history |
-| 4 | Get help with my claim | Claim ID (optional) + free text | Scrubs, categorizes the request (complaint, delay, rental, towing, repair shop, question, talk to a person), routes each part to the correct team |
+| 4 | Get help with my claim | Claim ID (optional) + free text | Scrubs, categorizes the claim-related request (complaint, delay, claim question, talk to an adjuster, contact change), routes each part to the correct team with a follow-up date |
 
-Out of scope for v1: payments, actually booking rentals, tows, or repair shops (the system routes these requests to a team), claim cancellation, policy changes, and multi-turn conversations.
+**Claim support only.** Out of scope: payments, billing, policy changes, rentals, towing, repair-shop booking, claim cancellation, and multi-turn conversations. Out-of-scope requests get a polite reply that points to the right channel.
 
 The full customer-facing walkthrough, with terminal mockups and what happens behind the scenes, is in [`docs/user-experience.md`](docs/user-experience.md).
 
@@ -50,7 +50,7 @@ The full customer-facing walkthrough, with terminal mockups and what happens beh
 The system's vocabulary is based on the coverages most US auto insurers offer:
 
 - **Six core coverages:** liability (bodily injury and property damage), collision, comprehensive, uninsured/underinsured motorist, personal injury protection (PIP), and medical payments (MedPay).
-- **Common add-ons:** rental reimbursement, roadside/towing, and gap or new-car replacement.
+- **Add-ons** (rental, towing, gap) are out of scope. Their underlying facts (vehicle drivable, possible total loss) are still recorded for the adjuster.
 
 The details are in `docs/user-experience.md` §1.
 
@@ -209,10 +209,11 @@ Routing is deterministic, based on indicators and categories:
 |------|----------|
 | Claims Adjuster | Injury claims, UM/UIM escalations, contradictions, mixed incidents |
 | Customer Relations | Complaints, service delays, customer distress |
-| Claims Services | Rental, towing, repair-shop, and appraisal requests |
 | Special Review | Configured risk indicators (never labeled as fraud) |
 | Privacy Review | PII that couldn't be safely confirmed as scrubbed |
 | Policy Services | Contact-information change requests (the value is redacted; a human completes the update) |
+
+Every routed request gets a realistic follow-up date computed by code (1–3 business days by urgency, weekends skipped). See `docs/user-experience.md` §2.
 
 ## Core Contracts (Provisional)
 
@@ -285,7 +286,7 @@ Every failure writes a **status-only report** (claim ID, status, failed step, er
 - Autonomous fraud accusations
 - External web search, external databases, production insurance integrations
 - User authentication (claim ID lookup only; status replies contain no PII)
-- Web UI
+- Web UI in v1 (a local web UI is a **stretch goal** after phase 003)
 - Storing PII of any kind
 
 ## Technology Stack
@@ -310,7 +311,8 @@ user stories are ordered by priority.
 | **000-project-foundation** | Outline, tooling, constitution, CLAUDE.md, UX walkthrough, prompt history |
 | **001-file-a-claim** | Menu shell; contracts; orchestrator; layered PII scrubbing; assessment with coverage-line rules; sentiment and risk with routing; summary reply and report; sanitized claim record. Stories, in order: P1 PII scrubbing → P2 claim assessment → P3 risk and routing → P4 customer reply and report → P5 end-to-end "File a new claim" |
 | **002-existing-claim-support** | Seeded sample claims; Check status; Add or correct details (update mode, history, contact-change routing); Get help (request categories, multi-team routing) |
-| **003-hardening-and-release** | End-to-end adversarial suite, `--trace` mode, sample reports, architecture diagram, README |
+| **003-hardening-and-release** | End-to-end adversarial suite, `--trace` staff mode (moved earlier only if debugging needs it), sample reports, architecture diagram, README |
+| *Stretch: 004-local-web-ui* | Minimal localhost page with the same four tasks, reusing the orchestrator unchanged (the core never prints; terminal and web are thin adapters) |
 
 ## Development Process
 

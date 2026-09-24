@@ -2,7 +2,7 @@
 
 A **car insurance claim automation customer support system**. Customers use a terminal menu to file
 a new claim, check claim status, add or correct details on an existing claim, or get help with a
-claim (complaints and rental, towing, or repair requests) that gets routed to the correct human
+claim (complaints, delays, claim questions) that gets routed to the correct human
 team.
 
 - Governing rules: `.specify/memory/constitution.md`. It wins any conflict with this file.
@@ -61,8 +61,8 @@ Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`
   documents or sub-features. Use commits.
 - Conventional Commits following the TDD rhythm (`test:` → `feat:` → `refactor:`). End commit
   messages with the Co-Authored-By trailer.
-- One PR per phase via the `gh` CLI, merged when the suite is green and ruff is clean. The user
-  merges phase PRs unless they hand the merge to Claude.
+- One PR per phase via the `gh` CLI. Suite green and ruff clean, then Claude presents a
+  phase-completion check and merges **only after the user confirms** the phase is complete.
 
 ## Documentation
 

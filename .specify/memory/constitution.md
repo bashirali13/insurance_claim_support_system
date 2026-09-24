@@ -108,7 +108,9 @@ and route work correctly, not to replace those decisions.
 - **Model:** accessed through OpenRouter. The model ID comes from `MODEL_NAME`
   (`deepseek/deepseek-v4-flash-0731`) and the key from `OPENROUTER_API_KEY`, both set in `.env`.
   `.env` MUST NOT be committed.
-- **Domain:** car insurance only. Terminal UI only. No authentication; existing claims are looked
+- **Domain:** car insurance **claim support** only. Terminal UI in v1; a local web UI is a stretch
+  goal and MUST reuse the orchestrator unchanged. The core MUST NOT print; UIs are thin adapters.
+  No authentication; existing claims are looked
   up by claim ID, and status replies contain no PII.
 - **Storage:** sanitized JSON claim records in `data/claims/`, internal reports in `output/`.
 - **Failure statuses:** `REJECTED_INPUT`, `MANUAL_REVIEW_REQUIRED`, `FAILED_MODEL_ERROR`,
@@ -128,8 +130,9 @@ and route work correctly, not to replace those decisions.
   Each commit is small and does one thing.
 - **Merge gate:** a phase merges only when the full suite passes and `ruff check` is clean on the
   branch tip. Red commits are expected inside the branch history.
-- **Pull requests:** one PR per phase, opened with the `gh` CLI. The user reviews and merges phase
-  PRs, unless the user explicitly hands a merge to Claude.
+- **Pull requests:** one PR per phase, opened with the `gh` CLI. Before merging, Claude presents a
+  phase-completion check (what was delivered against the phase goals and acceptance criteria,
+  plus any gaps). Claude merges only after the user confirms the phase is complete.
 - **Prompt history:** a summary is added to `docs/prompt-history/` at key moments (after the
   constitution, after each approved spec, at major pivots). Each summary records the objective,
   key prompts, recommendations, decisions, pushbacks, clarifications, and deferred scope.
