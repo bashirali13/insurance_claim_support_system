@@ -148,7 +148,7 @@ Choose option 3 anytime to add these details.
 | 1 | Intake & PII | Regex removes the phone number → the model proposes "Jordan Reyes" → the verbatim span is replaced → re-scan passes → `SanitizedSubmission` ("…reach me at [PHONE_1]. - [PERSON_1]") |
 | 2 | Claim Assessment | Incident `COLLISION`; facts: other driver fled, injury to policyholder, rear bumper; checklist finds a missing police report → `ClaimAssessment` |
 | — | Rules (code) | Coverage lines: Collision, UM/UIM, PIP/MedPay |
-| 3 | Sentiment & Risk | Sentiment `CONCERNED`; indicators `INJURY_REPORTED`, `HIT_AND_RUN_NO_POLICE_REPORT` → code computes risk `MEDIUM`, team **Claims Adjuster**, promise of 1 business day |
+| 3 | Sentiment & Risk | Sentiment `CONCERNED`; indicators `INJURY_REPORTED`, `HIT_AND_RUN_NO_POLICE_REPORT` → code computes risk `HIGH` (two indicators), team **Claims Adjuster**, promise of 1 business day, status `ESCALATED` |
 | 4 | Claim Summary | Customer reply text plus the internal report rendered from the template |
 | Save | Orchestrator | PII guard passes → `data/claims/CLM-2026-0007.json` (sanitized) and `output/CLM-2026-0007_<time>.md` |
 
@@ -293,7 +293,7 @@ customer view. It's useful for demos, debugging, and reviewers:
   │ coverage_lines: COLLISION, UM_UIM, PIP_MEDPAY
   ├ trace ─ risk ─────────────────────────────────
   │ sentiment: CONCERNED  indicators: INJURY_REPORTED, HIT_AND_RUN_NO_POLICE_REPORT
-  │ risk: MEDIUM  team: CLAIMS_ADJUSTER  follow_up_by: 2026-09-25
+  │ risk: HIGH  team: CLAIMS_ADJUSTER  follow_up_by: 2026-09-25
   └ trace ─ saved: data/claims/CLM-2026-0007.json
 ```
 
