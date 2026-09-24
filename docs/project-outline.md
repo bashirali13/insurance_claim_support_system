@@ -66,7 +66,7 @@ The details are in `docs/user-experience.md` §1.
 - **Glass**
 - **Animal strike**
 - **Unknown:** not enough information to classify
-- **Mixed:** multiple unrelated incidents; escalated, and the customer is asked to file separately
+- **Mixed:** multiple unrelated incidents; one claim is created and an adjuster separates them
 
 Liability and UM/UIM are **coverage lines triggered by facts about other parties**, not incident types. For example, a hit-and-run is a `COLLISION` with the UM/UIM line triggered.
 
@@ -407,6 +407,7 @@ The UI shows progress, the customer reply, and the report location. It never sho
 ├── tests/{unit,integration,fixtures}/
 ├── data/claims/               # sanitized claim records (seeded samples)
 ├── output/                    # generated reports (gitignored)
+├── logs/                      # text-free event log (gitignored)
 ├── docs/
 │   ├── prompt-history/        # summaries at key project moments
 │   └── samples/               # curated sample reports
