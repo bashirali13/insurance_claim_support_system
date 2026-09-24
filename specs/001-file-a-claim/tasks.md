@@ -180,7 +180,7 @@ The rule tables are also tested as pure functions.
 
 ### Implementation for User Story 2
 
-- [ ] T012 [US2] Implement in `src/claim_intake/rules.py`: `injury_present(llm_out)`,
+- [X] T012 [US2] Implement in `src/claim_intake/rules.py`: `injury_present(llm_out)`,
   `missing_information(llm_out)`, and `coverage_lines(llm_out)`, exactly per data-model.md
   (checklist and coverage tables). Add to contracts:
   - `IncidentType`, `UmUimSubtype`, `TriState`, `MissingItem`, `CoverageLine`
