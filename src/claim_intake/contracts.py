@@ -192,3 +192,41 @@ class RiskAssessment(Contract):
     follow_up_business_days: int
     follow_up_date: date
     rationale: str
+
+
+# --- Reply and report (US4) ------------------------------------------------------------------
+
+
+class SummaryLlmOutput(Contract):
+    """The only customer-facing text the model writes; checked before use (research R8)."""
+
+    opening_line: str
+    recorded_points: list[str] = Field(min_length=1, max_length=5)
+    narrative_summary: str
+
+
+class CustomerReply(Contract):
+    text: str
+
+
+class InternalReport(Contract):
+    markdown: str
+
+
+class ProcessingStatus(StrEnum):
+    COMPLETED = "COMPLETED"
+    REJECTED_INPUT = "REJECTED_INPUT"
+    MANUAL_REVIEW_REQUIRED = "MANUAL_REVIEW_REQUIRED"
+    FAILED_MODEL_ERROR = "FAILED_MODEL_ERROR"
+    FAILED_VALIDATION = "FAILED_VALIDATION"
+    FAILED_OUTPUT = "FAILED_OUTPUT"
+
+
+class PipelineStep(StrEnum):
+    VALIDATE_INPUT = "VALIDATE_INPUT"
+    INTAKE = "INTAKE"
+    ASSESSMENT = "ASSESSMENT"
+    RISK = "RISK"
+    SUMMARY = "SUMMARY"
+    PRIVACY_GUARD = "PRIVACY_GUARD"
+    SAVE = "SAVE"

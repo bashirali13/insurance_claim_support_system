@@ -289,7 +289,7 @@ and summary (checked by a validator); templates render everything else.
 
 ### Implementation for User Story 4
 
-- [ ] T024 [US4] Implement `src/claim_intake/reporting.py`:
+- [X] T024 [US4] Implement `src/claim_intake/reporting.py`:
   - `render_reply(...)`, `render_report(...)`, and `render_status_only_report(...)`
   - the customer-wording tables for `MissingItem` and `Team` (`SPECIAL_REVIEW` has no wording)
   - `format_follow_up(date)` → "Friday, Sep 25"
