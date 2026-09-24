@@ -267,7 +267,7 @@ and summary (checked by a validator); templates render everything else.
 
 ### Tests for User Story 4 (write first; they must fail)
 
-- [ ] T022 [P] [US4] Write the template tests in `tests/unit/test_reporting.py`:
+- [X] T022 [P] [US4] Write the template tests in `tests/unit/test_reporting.py`:
   - `test_ac_4_1_reply_sections_in_order_with_claim_number_and_dated_next_step` (expects
     "A claims adjuster will contact you by Friday, Sep 25.")
   - `test_ac_4_1_still_needed_section_omitted_when_nothing_missing`
@@ -279,7 +279,7 @@ and summary (checked by a validator); templates render everything else.
   - `test_ac_4_5_report_has_all_sections_in_order_and_decision_notice` (per contracts/files.md)
   - `test_ac_4_5_empty_lists_render_none_recorded`
   - `test_ac_5_8_status_only_report_contains_no_narrative_or_facts`
-- [ ] T023 [P] [US4] Write the summary-agent tests in `tests/unit/test_summary.py`:
+- [X] T023 [P] [US4] Write the summary-agent tests in `tests/unit/test_summary.py`:
   - `test_ac_4_3_model_text_with_placeholder_is_retried_then_fails`
   - `test_ac_4_3_model_text_with_phone_number_is_retried_then_fails`
   - `test_ac_4_4_forbidden_decision_terms_are_retried_then_fail` (parametrized over the research R8

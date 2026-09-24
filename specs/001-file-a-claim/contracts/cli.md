@@ -79,13 +79,14 @@ where marked *model*.
  Your claim number: <CLM-YYYY-NNNN>
 --------------------------------------------------
 <opening_line — model>
+We're sorry to hear someone was hurt.   (only when injury_present = YES)
 
 Here's what we recorded:
   • <recorded_point — model>            (1–5 bullets)
 
 What happens next:
   • <Team role> will contact you by <Weekday, Mon D>.     (one bullet per customer-visible team)
-  • If your pain gets worse, please seek medical care right away.   (only when injury_present = YES)
+  • If anyone's symptoms get worse, please seek medical care right away.   (only when injury_present = YES)
   • You described more than one incident. An adjuster will help separate them.   (only when MIXED)
 
 What we still need from you:            (section omitted when nothing is missing)

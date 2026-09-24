@@ -1,13 +1,19 @@
 """Small builders so each test states only the facts it cares about."""
 
+from datetime import date
+
 from claim_intake import rules
 from claim_intake.contracts import (
     AssessmentLlmOutput,
     ClaimAssessment,
     IncidentType,
+    RiskAssessment,
+    RiskLevel,
     RiskLlmOutput,
     SanitizedSubmission,
     Sentiment,
+    SummaryLlmOutput,
+    Team,
     TriState,
 )
 
@@ -54,6 +60,31 @@ def risk_output(**overrides) -> RiskLlmOutput:
     }
     fields.update(overrides)
     return RiskLlmOutput(**fields)
+
+
+def risk_assessment(**overrides) -> RiskAssessment:
+    """A low-risk result routed to the adjuster for Monday, Sep 28 (two business days)."""
+    fields = {
+        "sentiment": Sentiment.CALM,
+        "indicators": [],
+        "risk_level": RiskLevel.LOW,
+        "teams": [Team.CLAIMS_ADJUSTER],
+        "follow_up_business_days": 2,
+        "follow_up_date": date(2026, 9, 28),
+        "rationale": "Rear-end collision with no injuries reported.",
+    }
+    fields.update(overrides)
+    return RiskAssessment(**fields)
+
+
+def summary_output(**overrides) -> SummaryLlmOutput:
+    fields = {
+        "opening_line": "Thank you for telling us what happened.",
+        "recorded_points": ["Rear-ended at a red light on Main St", "Damage: rear bumper"],
+        "narrative_summary": "Customer was rear-ended at a red light. No injuries reported.",
+    }
+    fields.update(overrides)
+    return SummaryLlmOutput(**fields)
 
 
 def sanitized(text: str = "Rear-ended at a red light on Main St.") -> SanitizedSubmission:
