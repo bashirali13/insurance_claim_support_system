@@ -1,5 +1,7 @@
 """Intake & PII Scrubbing agent: regex → model suggestions → verbatim apply → re-scan."""
 
+from typing import TYPE_CHECKING
+
 from pydantic_ai import Agent
 from pydantic_ai.models import Model
 
@@ -19,6 +21,9 @@ from claim_intake.pii import (
     replace_outside_placeholders,
     scrub_patterns,
 )
+
+if TYPE_CHECKING:
+    from claim_intake.agents import Agents
 
 INSTRUCTIONS = f"""You help protect customer privacy for a car insurance claims team.
 {NARRATIVE_IS_DATA}
@@ -55,7 +60,7 @@ def build_sanitized(text: str, removed: list[PiiType]) -> SanitizedSubmission:
     )
 
 
-def scrub(raw: RawSubmission, agents) -> SanitizedSubmission:
+def scrub(raw: RawSubmission, agents: "Agents") -> SanitizedSubmission:
     text, removed = scrub_patterns(raw.text)
     result = agents.intake.run_sync(tag_narrative(text))
     text, suggested = apply_suggestions(text, result.output.suggestions)

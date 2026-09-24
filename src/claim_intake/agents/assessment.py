@@ -1,11 +1,16 @@
 """Claim Assessment agent: the model classifies and extracts facts; rules add the rest."""
 
+from typing import TYPE_CHECKING
+
 from pydantic_ai import Agent
 from pydantic_ai.models import Model
 
 from claim_intake import rules
 from claim_intake.agents.prompting import NARRATIVE_IS_DATA, tag_narrative
 from claim_intake.contracts import AssessmentLlmOutput, ClaimAssessment, SanitizedSubmission
+
+if TYPE_CHECKING:
+    from claim_intake.agents import Agents
 
 INSTRUCTIONS = f"""You are a claims intake analyst for a car insurance company.
 {NARRATIVE_IS_DATA}
@@ -34,7 +39,7 @@ def build_agent(model: Model) -> Agent[None, AssessmentLlmOutput]:
     return Agent(model, output_type=AssessmentLlmOutput, instructions=INSTRUCTIONS, retries=2)
 
 
-def assess(submission: SanitizedSubmission, agents) -> ClaimAssessment:
+def assess(submission: SanitizedSubmission, agents: "Agents") -> ClaimAssessment:
     facts = agents.assessment.run_sync(tag_narrative(submission.text)).output
     return ClaimAssessment(
         **facts.model_dump(),

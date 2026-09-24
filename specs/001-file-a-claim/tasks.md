@@ -190,7 +190,7 @@ The rule tables are also tested as pure functions.
   which calls the assessment agent (instructions per contracts/agents.md, narrative in
   `<customer_narrative>` tags) and completes `ClaimAssessment` via the T012 rules. Register the
   assessment agent in `create_agents`.
-- [ ] T014 [US2] Refactor pass on `rules.py` and `agents/assessment.py`, keeping the suite green.
+- [X] T014 [US2] Refactor pass on `rules.py` and `agents/assessment.py`, keeping the suite green.
 
 **Checkpoint**: US2 is complete. `uv run pytest -k "ac_1 or ac_2"` is green.
 
