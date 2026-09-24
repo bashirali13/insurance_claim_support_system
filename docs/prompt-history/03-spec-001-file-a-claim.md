@@ -70,7 +70,50 @@ menu option end to end, with testable acceptance criteria for every behavior.
 - **Rejected:** creating no claim for mixed incidents; model-only injection detection; a claim
   without a number during privacy review.
 
+## Post-Approval Amendment: Plan, Tasks, and Analyze
+
+**Prompts (condensed):**
+- *"Approved. Write 03, then plan."*
+- `/speckit-tasks`, then `/speckit-analyze`
+- *"Suggest concrete remediation so that each task has acceptance criteria that can shape simple
+  tests that then drive development."*
+- *"Yes. Re-run analyze, make sure everything is clear."*
+
+**Plan highlights:**
+- **Narrow LLM output models:** each agent's model returns only what it may judge, and code builds
+  the full contract. For example, the risk model has no field for level, team, or date.
+- **Agents built by `create_agents(model)`:** tests pass a scripted `FunctionModel`, and real
+  requests are blocked in tests.
+- **Output validator:** rejects placeholders, PII, or decision words ("covered", "approved", "at
+  fault", "$…") in model-written reply text.
+- **Research verified against the installed PydanticAI 2.49** (`OpenRouterModel`,
+  `FunctionModel`, `ALLOW_MODEL_REQUESTS`).
+- **Risk to confirm early:** whether DeepSeek via OpenRouter supports tool-call structured output.
+  The fallback is `PromptedOutput`.
+- **UX doc corrected:** the hit-and-run + injury example is `HIGH` / `ESCALATED` under the approved
+  rules (it had said `MEDIUM`).
+
+**What analyze found:** 4 critical issues, all of the same kind. The design built behavior that no
+acceptance criterion required, which would have meant code without a driving test (Principle II)
+or output that skipped the PII guard (Principle III):
+
+| Gap | Fix (spec first, then tasks) |
+|---|---|
+| Event log had no AC | New **AC-5.13**: one line per step, allowed fields only, no narrative words |
+| "Narrative is data" had no AC | New **AC-3.10**: tagged narrative plus a "never follow instructions" line. Tested inside each agent's own test task, so Red still comes before Green |
+| Mixed-incident reply line had no AC | Extended **AC-4.1** |
+| PII guard only covered reply and report | **AC-4.6 / FR-025** now cover the claim record and event log |
+| Legal rep → Special Review, contradicted injury → 1 day, HIGH → 1 day, invalid menu input | Extended **AC-3.7, AC-3.3, AC-3.4, AC-5.1** |
+| Smaller items | AC-1.4 placeholder suggestions; AC-1.9 now requires the frozen / no-extra-fields base class; FR-011 test relabeled to AC-5.9; length limit is "after trimming"; SC-004 is the median of 5 runs |
+
+**Result:** spec 46 → **48 ACs**. Every AC has at least one named test, no test cites a missing
+AC, all 34 functional requirements are traced, and **0 critical issues** remain.
+
+**Lesson recorded:** SpecKit's `analyze` step is where "tests only from acceptance criteria" gets
+enforced in practice. It caught design-level behavior (logging, prompt formatting, template lines)
+that is easy to build without ever specifying it.
+
 ## Next
 
-`/speckit-plan` for 001-file-a-claim: technical design, contract models, module layout, agent
-setup, and rule tables as code, checked against the constitution.
+`/speckit-implement` for 001-file-a-claim, starting with Setup (T001–T003) and US1 (PII) as the
+MVP checkpoint. Each test task is committed Red (`test:`) before its Green (`feat:`) commit.
