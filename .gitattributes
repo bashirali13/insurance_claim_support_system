@@ -1,0 +1,4 @@
+# Normalize line endings: LF in the repo and working tree for everything,
+# except Windows-only PowerShell scripts, which keep CRLF.
+* text=auto eol=lf
+*.ps1 text eol=crlf
