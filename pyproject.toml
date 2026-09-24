@@ -26,6 +26,10 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra --strict-markers -m 'not live'"
+filterwarnings = [
+    # Emitted inside pydantic-graph when run_sync starts an event loop; not our code.
+    "ignore:There is no current event loop:DeprecationWarning:pydantic_graph",
+]
 markers = [
     "live: calls the real model through OpenRouter (deselected by default; run with -m live)",
 ]

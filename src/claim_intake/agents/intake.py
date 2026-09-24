@@ -15,6 +15,7 @@ from claim_intake.pii import (
     PLACEHOLDER,
     appears_outside_placeholders,
     find_pii,
+    next_placeholder,
     replace_outside_placeholders,
     scrub_patterns,
 )
@@ -30,9 +31,7 @@ def build_agent(model: Model) -> Agent[None, IntakeLlmOutput]:
     return Agent(model, output_type=IntakeLlmOutput, instructions=INSTRUCTIONS, retries=2)
 
 
-def apply_suggestions(
-    text: str, suggestions: list[PiiSuggestion]
-) -> tuple[str, list[PiiType]]:
+def apply_suggestions(text: str, suggestions: list[PiiSuggestion]) -> tuple[str, list[PiiType]]:
     """Redact model-suggested spans, but only ones that appear verbatim in the text."""
     applied: list[PiiType] = []
     for suggestion in sorted(suggestions, key=lambda s: len(s.text), reverse=True):
@@ -42,10 +41,7 @@ def apply_suggestions(
         if not appears_outside_placeholders(text, span):
             continue
         pii_type = PiiType(suggestion.pii_type)
-        used = [int(n) for n in PLACEHOLDER.findall(text) if n.startswith(f"[{pii_type}_")
-                for n in [n[len(pii_type) + 2 : -1]]]
-        placeholder = f"[{pii_type}_{max(used, default=0) + 1}]"
-        text = replace_outside_placeholders(text, span, placeholder)
+        text = replace_outside_placeholders(text, span, next_placeholder(text, pii_type))
         applied.append(pii_type)
     return text, applied
 

@@ -5,6 +5,7 @@ the re-scan after model suggestions, and the final privacy guard on everything w
 """
 
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from claim_intake.contracts import PiiType
@@ -34,7 +35,7 @@ def _luhn_valid(value: str) -> bool:
 class _Detector:
     pii_type: PiiType
     pattern: re.Pattern[str]
-    validate: object = None  # optional callable(value) -> bool
+    validate: Callable[[str], bool] | None = None
 
 
 # Order matters only as a tie-breaker: the most specific digit patterns come first.
@@ -73,7 +74,8 @@ _DETECTORS = [
     _Detector(
         PiiType.DOB,
         re.compile(
-            r"\b(?:born(?: on)?|DOB|date of birth|birthday)" + _FILLER
+            r"\b(?:born(?: on)?|DOB|date of birth|birthday)"
+            + _FILLER
             + r"(?P<value>\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|[A-Z][a-z]+ \d{1,2},? \d{4})",
             re.IGNORECASE,
         ),
@@ -88,7 +90,8 @@ _DETECTORS = [
     _Detector(
         PiiType.PLATE,
         re.compile(
-            r"\b(?:licen[cs]e plate|plate|registration)" + _FILLER
+            r"\b(?:licen[cs]e plate|plate|registration)"
+            + _FILLER
             + r"(?=[A-Za-z0-9 -]{0,9}\d)(?P<value>[A-Z0-9]{1,4}(?:[ -]?[A-Z0-9]{1,4})?)\b",
             re.IGNORECASE,
         ),
@@ -96,7 +99,9 @@ _DETECTORS = [
     _Detector(
         PiiType.DRIVER_LICENSE,
         re.compile(
-            r"\b(?:driver'?s? licen[cs]e|licen[cs]e|DL)" + _FILLER + _HAS_DIGIT
+            r"\b(?:driver'?s? licen[cs]e|licen[cs]e|DL)"
+            + _FILLER
+            + _HAS_DIGIT
             + r"(?P<value>[A-Z0-9][A-Z0-9-]{4,14})\b",
             re.IGNORECASE,
         ),
@@ -148,20 +153,24 @@ def _next_number(text: str, pii_type: PiiType) -> int:
     return max(used, default=0) + 1
 
 
+def next_placeholder(text: str, pii_type: PiiType) -> str:
+    """The next unused placeholder for this type, e.g. `[PERSON_2]` if `[PERSON_1]` exists."""
+    return f"[{pii_type}_{_next_number(text, pii_type)}]"
+
+
 def scrub_patterns(text: str) -> tuple[str, list[PiiType]]:
     """Replace every pattern-detectable value with a stable, numbered placeholder."""
     matches = _find_matches(text)
-    placeholders: dict[tuple[PiiType, str], str] = {}
-    counters: dict[PiiType, int] = {}
+    placeholder_for: dict[tuple[PiiType, str], str] = {}
     for m in matches:
         key = (m.pii_type, m.value)
-        if key not in placeholders:
-            counters[m.pii_type] = counters.get(m.pii_type, _next_number(text, m.pii_type) - 1) + 1
-            placeholders[key] = f"[{m.pii_type}_{counters[m.pii_type]}]"
+        if key not in placeholder_for:
+            already_numbered = sum(1 for kind, _ in placeholder_for if kind == m.pii_type)
+            number = _next_number(text, m.pii_type) + already_numbered
+            placeholder_for[key] = f"[{m.pii_type}_{number}]"
     for m in reversed(matches):
-        text = text[: m.start] + placeholders[(m.pii_type, m.value)] + text[m.end :]
+        text = text[: m.start] + placeholder_for[(m.pii_type, m.value)] + text[m.end :]
     return text, _sorted_types(m.pii_type for m in matches)
-
 
 
 def replace_outside_placeholders(text: str, value: str, replacement: str) -> str:

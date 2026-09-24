@@ -130,7 +130,7 @@ and the manual-review flag. Model suggestions come from `structured_model`.
   - Add to contracts: `SuggestedPiiType` (`PERSON, PLATE, DRIVER_LICENSE, OTHER_IDENTIFIER`),
     `PiiSuggestion`, `IntakeLlmOutput`, `RawSubmission` ("1–5,000 chars after stripping"), and
     `SanitizedSubmission` ("pii_types_removed sorted, unique; types only").
-- [ ] T009 [US1] Refactor pass on `pii.py` and `agents/intake.py` (naming, detector table
+- [X] T009 [US1] Refactor pass on `pii.py` and `agents/intake.py` (naming, detector table
   readability), keeping the full suite green.
 
 **Checkpoint**: US1 is complete. `uv run pytest -k ac_1` is green.
