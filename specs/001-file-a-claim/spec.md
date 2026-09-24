@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-24
 
-**Status**: Draft
+**Status**: Approved (2026-09-24)
 
 **Input**: User description: "Phase 001 of the Northstar Auto Insurance claim support system: the
 'File a new claim' menu option end to end. Customer describes the incident in free text
