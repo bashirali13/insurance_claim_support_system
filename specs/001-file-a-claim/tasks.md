@@ -367,7 +367,7 @@ CLI presents the menu.
   - Add to contracts: `ClaimStatus` (`SUBMITTED, AWAITING_INFORMATION, ESCALATED`),
     `HistoryEntry`, `ClaimRecord` (claim_id `^CLM-\d{4}-\d{4}$`), `ProcessingStatus`,
     `PipelineStep`, `TaskResult`, and `EventLogEntry`
-- [ ] T032 [US5] Implement `src/claim_intake/orchestration.py`:
+- [X] T032 [US5] Implement `src/claim_intake/orchestration.py`:
   - `Deps` and `file_claim(raw_text, deps, on_progress) -> TaskResult`, following the
     contracts/agents.md pipeline
   - a privacy guard (`find_pii`) over the reply, report, and record before any write (FR-025,
