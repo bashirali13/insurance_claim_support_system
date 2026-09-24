@@ -1,0 +1,23 @@
+[
+  {"id": "S01", "expected": "COLLISION", "text": "Yesterday around 5:30pm I was stopped at the light on Elm Ave and Pine St when another car rear-ended me. We exchanged insurance info. Nobody was hurt and my car still drives, but the rear bumper and trunk are dented."},
+  {"id": "S02", "expected": "COLLISION", "text": "This morning I slid on ice on Route 9 near the river bridge and hit the guardrail. No one else was involved and I'm okay. The front bumper is cracked and the guardrail is bent."},
+  {"id": "S10", "expected": "COLLISION", "text": "Yesterday around 6pm I was stopped at a red light on Main St when a pickup hit me from behind and drove off. My bumper is crushed and my neck is sore."},
+  {"id": "S03", "expected": "THEFT", "text": "My car was stolen from my driveway overnight, sometime between 11pm and 6am on Tuesday. I live in Maple Heights. I filed a police report this morning and have the report number."},
+  {"id": "S04", "expected": "THEFT", "text": "Someone stole my car from the Walmart parking lot on Grand Blvd last night around 9pm. I haven't called the police yet."},
+  {"id": "I01", "expected": "THEFT", "text": "Someone broke my window and stole my catalytic converter and the stereo while I was parked at the gym on 3rd St last night."},
+  {"id": "S05", "expected": "VANDALISM", "text": "Sometime Monday night someone keyed the whole driver side of my car and slashed a tire while it was parked in the garage at my apartment on Lakeview Dr. I didn't call the police."},
+  {"id": "I02", "expected": "VANDALISM", "text": "Kids spray-painted my hood and smashed my side mirrors on purpose while the car was parked on the street on Halloween night."},
+  {"id": "S06", "expected": "WEATHER", "text": "The hail storm on Tuesday afternoon dented my roof and hood pretty badly. The car was parked at home in Cedar Falls. The windshield is fine."},
+  {"id": "I03", "expected": "WEATHER", "text": "During the storm last night a big tree branch fell on my car in the driveway and caved in the roof."},
+  {"id": "I04", "expected": "WEATHER", "text": "The river flooded our street on Sunday and water came up over the doors of my car. It won't start now."},
+  {"id": "S07", "expected": "FIRE", "text": "My engine caught fire while I was driving on Highway 30 this afternoon. I pulled over and the fire department put it out. Nobody was hurt but the car had to be towed and won't start."},
+  {"id": "I05", "expected": "FIRE", "text": "A fire in my neighbor's garage spread to my carport overnight and my car's paint and interior are burned."},
+  {"id": "S08", "expected": "GLASS", "text": "A rock kicked up by a truck hit my windshield on I-80 near exit 42 yesterday morning. The crack is about 8 inches and spreading."},
+  {"id": "I06", "expected": "GLASS", "text": "My rear window shattered on its own while the car was parked at work today. Nothing else is damaged."},
+  {"id": "S09", "expected": "ANIMAL_STRIKE", "text": "I hit a deer on County Road 12 last night around 10pm. The grille and headlight are smashed but I was able to drive home. I'm fine."},
+  {"id": "I07", "expected": "ANIMAL_STRIKE", "text": "A moose ran into the side of my car on Route 1 early this morning and dented both doors."},
+  {"id": "S23", "expected": "UNKNOWN", "text": "Something happened to my car and I need help."},
+  {"id": "I08", "expected": "UNKNOWN", "text": "My car is damaged. Please call me back."},
+  {"id": "S22", "expected": "MIXED", "text": "Last month hail cracked my sunroof at home, and today someone dented my door in the gym parking lot on 3rd St."},
+  {"id": "I09", "expected": "MIXED", "text": "Two things: my catalytic converter was stolen last week at work, and yesterday I rear-ended someone on Oak Ave."}
+]
