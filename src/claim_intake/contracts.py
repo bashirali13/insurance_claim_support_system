@@ -1,7 +1,8 @@
 """Typed contracts passed between the orchestrator and agents (see data-model.md)."""
 
-from datetime import date
+from datetime import date, datetime
 from enum import StrEnum
+from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -230,3 +231,49 @@ class PipelineStep(StrEnum):
     SUMMARY = "SUMMARY"
     PRIVACY_GUARD = "PRIVACY_GUARD"
     SAVE = "SAVE"
+
+
+# --- Persistence and results (US5) -----------------------------------------------------------
+
+
+class ClaimStatus(StrEnum):
+    SUBMITTED = "SUBMITTED"
+    AWAITING_INFORMATION = "AWAITING_INFORMATION"
+    ESCALATED = "ESCALATED"
+
+
+class HistoryEntry(Contract):
+    at: datetime
+    event: Literal["FILED", "PRIVACY_REVIEW_OPENED"]
+
+
+class ClaimRecord(Contract):
+    """Saved as data/claims/<claim_id>.json. Never contains personal values."""
+
+    claim_id: str = Field(pattern=r"^CLM-\d{4}-\d{4}$")
+    status: ClaimStatus
+    filed_at: datetime
+    assessment: ClaimAssessment | None
+    teams: list[Team]
+    follow_up_date: date
+    history: list[HistoryEntry] = Field(min_length=1)
+
+
+class TaskResult(Contract):
+    """What every UI receives from the orchestrator."""
+
+    processing_status: ProcessingStatus
+    claim_id: str | None
+    customer_message: str
+    report_path: str | None
+
+
+class EventLogEntry(Contract):
+    """One text-free line in logs/events.log (FR-033)."""
+
+    ts: datetime
+    claim_id: str | None
+    step: PipelineStep
+    outcome: ProcessingStatus
+    duration_ms: int
+    error_category: str | None

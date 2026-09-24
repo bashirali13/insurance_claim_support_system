@@ -358,7 +358,7 @@ CLI presents the menu.
 
 ### Implementation for User Story 5
 
-- [ ] T031 [US5] Implement `src/claim_intake/storage.py`:
+- [X] T031 [US5] Implement `src/claim_intake/storage.py`:
   - `ClaimStore`: `next_claim_id` (scan + exclusive create, per research R9) and `save` (tmp file
     + `os.replace`)
   - `ReportWriter`: `output/<claim_id>_<YYYYMMDDTHHMMSS>.md`, or `UNFILED_<ts>.md`

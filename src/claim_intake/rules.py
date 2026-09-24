@@ -3,6 +3,7 @@
 from claim_intake.contracts import (
     AssessmentLlmOutput,
     ClaimAssessment,
+    ClaimStatus,
     CoverageLine,
     IncidentType,
     MissingItem,
@@ -165,3 +166,17 @@ def follow_up_days(
         RiskIndicator.INJURY_REPORTED in found or injury_contradicted or level == RiskLevel.HIGH
     )
     return 1 if urgent else 2
+
+
+# --- Claim status (FR-029) --------------------------------------------------------------------
+
+
+def initial_status(
+    level: RiskLevel | None, missing: list[MissingItem], privacy_review: bool = False
+) -> ClaimStatus:
+    """Escalated beats awaiting-information, which beats submitted."""
+    if privacy_review or level == RiskLevel.HIGH:
+        return ClaimStatus.ESCALATED
+    if missing:
+        return ClaimStatus.AWAITING_INFORMATION
+    return ClaimStatus.SUBMITTED
