@@ -381,7 +381,7 @@ CLI presents the menu.
   `load_settings()` (python-dotenv; requires `OPENROUTER_API_KEY` and `MODEL_NAME`), and
   `build_model(settings)` → `OpenRouterModel(settings.model_name,
   provider=OpenRouterProvider(api_key=...), settings={temperature: 0, timeout: 30})`.
-- [ ] T034 [US5] Implement `src/claim_intake/cli.py`:
+- [X] T034 [US5] Implement `src/claim_intake/cli.py`:
   - `main()`: config check → menu loop → filing flow with multi-line input and validation →
     progress printing → reply
   - all texts exactly as in contracts/cli.md
