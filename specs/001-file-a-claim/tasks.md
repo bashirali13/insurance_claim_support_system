@@ -147,7 +147,7 @@ The rule tables are also tested as pure functions.
 
 ### Tests for User Story 2 (write first; they must fail)
 
-- [ ] T010 [P] [US2] Write the rule-table tests in `tests/unit/test_rules.py`, building
+- [X] T010 [P] [US2] Write the rule-table tests in `tests/unit/test_rules.py`, building
   `AssessmentLlmOutput` fixtures directly:
   - `test_ac_2_5_injury_present_is_unknown_when_not_stated`
   - `test_ac_2_5_injury_present_yes_when_either_side_injured`
@@ -160,7 +160,7 @@ The rule tables are also tested as pure functions.
   - `test_ac_2_8_coverage_lines_*`: parametrized over every row of the data-model coverage-rule
     table, plus the combined hit-and-run + injured-customer case → `[COLLISION, UM_UIM,
     PIP_MEDPAY]`
-- [ ] T011 [P] [US2] Write the assessment-agent tests in `tests/unit/test_assessment.py`, using
+- [X] T011 [P] [US2] Write the assessment-agent tests in `tests/unit/test_assessment.py`, using
   `structured_model`. These verify that model output is turned into the contract correctly; the
   real-model accuracy check is T037/SC-002.
   - `test_ac_2_1_rear_end_narrative_yields_collision`

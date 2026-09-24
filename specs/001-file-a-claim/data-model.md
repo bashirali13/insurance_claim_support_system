@@ -64,6 +64,7 @@ orientation and are **not** implemented in this phase.
 |---|---|
 | `statement_a` | `str` (quoted from the protected narrative) |
 | `statement_b` | `str` |
+| `about_injury` | `bool` (model-judged: whether the conflict concerns injuries; drives `injury_present = UNKNOWN`) |
 
 ### `AssessmentLlmOutput` (LLM output)
 | Field | Type | Notes |
@@ -85,7 +86,7 @@ orientation and are **not** implemented in this phase.
 ### `ClaimAssessment` (contract) = every `AssessmentLlmOutput` field, plus:
 | Field | Type | Computed by |
 |---|---|---|
-| `injury_present` | `TriState` | `YES` if either injury field is `YES`; `UNKNOWN` if an injury contradiction exists or either is `UNKNOWN`; else `NO` |
+| `injury_present` | `TriState` | `YES` if either injury field is `YES`; `UNKNOWN` if any contradiction has `about_injury` (checked first), or either is `UNKNOWN`; else `NO` |
 | `missing_information` | `list[MissingItem]` | checklist rules (below) |
 | `coverage_lines` | `list[CoverageLine]` | coverage rules (below) |
 
