@@ -397,7 +397,8 @@ runs.
 
 **Purpose**: prove the success criteria against the real model and close the phase.
 
-- [ ] T036 [P] Create the fictional evaluation fixtures:
+- [ ] T036 [P] Create the fictional evaluation fixtures, using the scenario IDs from
+  `docs/customer-scenarios.md` (S01–S30) as the base cases and adding variants:
   - `tests/fixtures/narratives/pii_cases.json`: ≥20 narratives, each with `expected_types` and
     `must_not_contain` values. It must include bare-plate cases for the prompt-history-03 watch
     item.

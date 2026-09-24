@@ -8,6 +8,7 @@ team.
 - Governing rules: `.specify/memory/constitution.md`. It wins any conflict with this file.
 - Scope and background: `docs/project-outline.md`.
 - How the product looks and behaves in the terminal: `docs/user-experience.md`.
+- Example customer inputs and expected outcomes (test reference): `docs/customer-scenarios.md`.
 - Feature specs: `specs/NNN-feature/` (`spec.md`, `plan.md`, `tasks.md`).
 
 ## Commands
