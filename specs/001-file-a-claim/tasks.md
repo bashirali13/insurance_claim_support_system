@@ -415,12 +415,12 @@ runs.
 
   If tool-calling output fails, switch the affected agents to `PromptedOutput` (research R2) and
   re-run. Record the bare-plate miss rate.
-- [ ] T038 Run the `specs/001-file-a-claim/quickstart.md` validation:
+- [X] T038 Run the `specs/001-file-a-claim/quickstart.md` validation:
   - the SC-007 AC-coverage command shows all 48 criteria (AC-1.1 … AC-5.13, including AC-3.10)
   - SC-004: run the walkthrough 5 times, total the `duration_ms` per claim from
     `logs/events.log`, and record the median (target < 60 s)
   - the manual walkthrough and the failure spot-checks
-- [ ] T039 Run the final `uv run ruff format .` and `uv run ruff check .` and a full
+- [X] T039 Run the final `uv run ruff format .` and `uv run ruff check .` and a full
   `uv run pytest`. Update `docs/user-experience.md` if any wording changed during implementation.
 - [ ] T040 Write `docs/prompt-history/04-implementation-001.md` (decisions, the R2 outcome, the
   watch-item results), push the branch, open the phase PR with `gh`, and present the

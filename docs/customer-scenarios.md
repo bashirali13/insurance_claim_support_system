@@ -240,10 +240,14 @@ The phrase list catches it even if the model doesn't. The reply is normal and co
 
 | Incident | Coverage lines | Missing | Indicators → risk | Teams, follow-up | Status |
 |---|---|---|---|---|---|
-| `COLLISION` | Collision | none | CONTRADICTORY_STATEMENTS → MEDIUM | Adjuster, **Fri Sep 25** | `SUBMITTED` |
+| `COLLISION` | Collision (+ PIP/MedPay\*) | none | CONTRADICTORY_STATEMENTS → MEDIUM | Adjuster, **Fri Sep 25** | `SUBMITTED` |
 
 Injury is recorded as `UNKNOWN`, and the contradiction quotes both statements. The contradicted
 injury earns the 1-day follow-up (AC-2.7, 3.3).
+
+\* Observed in the live walkthrough: the model recorded the passenger's ER visit on the customer's
+side, so PIP/MedPay is tagged for review. That's correct under the coverage rule (lines are for
+review, not decisions), even though injury stays `UNKNOWN` for routing.
 
 #### S22: Two unrelated incidents
 > Last month hail cracked my sunroof at home, and today someone dented my door in the gym parking
