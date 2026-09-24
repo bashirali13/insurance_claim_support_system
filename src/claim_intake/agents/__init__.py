@@ -5,15 +5,20 @@ from dataclasses import dataclass
 from pydantic_ai import Agent
 from pydantic_ai.models import Model
 
-from claim_intake.agents import assessment, intake
-from claim_intake.contracts import AssessmentLlmOutput, IntakeLlmOutput
+from claim_intake.agents import assessment, intake, risk
+from claim_intake.contracts import AssessmentLlmOutput, IntakeLlmOutput, RiskLlmOutput
 
 
 @dataclass(frozen=True)
 class Agents:
     intake: Agent[None, IntakeLlmOutput]
     assessment: Agent[None, AssessmentLlmOutput]
+    risk: Agent[None, RiskLlmOutput]
 
 
 def create_agents(model: Model) -> Agents:
-    return Agents(intake=intake.build_agent(model), assessment=assessment.build_agent(model))
+    return Agents(
+        intake=intake.build_agent(model),
+        assessment=assessment.build_agent(model),
+        risk=risk.build_agent(model),
+    )

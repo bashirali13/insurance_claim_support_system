@@ -248,10 +248,10 @@ date.
   - Add to contracts: `Sentiment`, `RiskIndicator`, `RiskLevel`, `Team` (`CLAIMS_ADJUSTER,
     CUSTOMER_RELATIONS, SPECIAL_REVIEW, PRIVACY_REVIEW`), `RiskLlmOutput` ("rationale ≤ 300
     chars"), and `RiskAssessment`
-- [ ] T020 [US3] Implement `src/claim_intake/agents/risk.py`: `evaluate(sanitized, assessment,
+- [X] T020 [US3] Implement `src/claim_intake/agents/risk.py`: `evaluate(sanitized, assessment,
   today, agents)` (instructions per contracts/agents.md). Register the risk agent in
   `create_agents`.
-- [ ] T021 [US3] Refactor pass on `rules.py`, `dates.py`, and `agents/risk.py`, keeping the suite
+- [X] T021 [US3] Refactor pass on `rules.py`, `dates.py`, and `agents/risk.py`, keeping the suite
   green.
 
 **Checkpoint**: US3 is complete. `uv run pytest -k "ac_1 or ac_2 or ac_3"` is green.
