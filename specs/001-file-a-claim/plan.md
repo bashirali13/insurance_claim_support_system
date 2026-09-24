@@ -49,6 +49,13 @@ per claim with a 30-second timeout each
 
 **Scale/Scope**: one customer per session. Claim volumes are small, in the hundreds of files.
 
+**Terminology**: "AI assistant" in the spec means the model behind each agent in this plan. The
+spec deliberately avoids naming technology.
+
+**Worst-case latency**: 4 agents × up to 3 attempts × a 30-second timeout could far exceed the
+60-second target. That's acceptable because SC-004 measures the *typical* case (the median of 5
+runs), and failures past the retries end safely with `FAILED_MODEL_ERROR`.
+
 ## Constitution Check
 
 *GATE: Must pass before Phase 0 research. Re-checked after Phase 1 design.*
