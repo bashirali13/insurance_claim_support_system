@@ -77,7 +77,7 @@ and the manual-review flag. Model suggestions come from `structured_model`.
 
 ### Tests for User Story 1 (write first; they must fail)
 
-- [ ] T005 [P] [US1] Write the pure-regex tests in `tests/unit/test_pii.py`:
+- [X] T005 [P] [US1] Write the pure-regex tests in `tests/unit/test_pii.py`:
   - `test_ac_1_1_*`: parametrized over all 10 types with fictional values, using the rules quoted
     from research R5:
     - SSN `\d{3}-\d{2}-\d{4}`, rejecting area 000/666/9xx
@@ -93,7 +93,7 @@ and the manual-review flag. Model suggestions come from `structured_model`.
     "On 09/23/2026 I was hit" is kept)
   - `test_ac_1_8_find_pii_reports_residual_types` (`find_pii` on a text containing an SSN returns
     `[SSN]`; on placeholder-only text it returns `[]`)
-- [ ] T006 [P] [US1] Write the intake-agent tests in `tests/unit/test_intake.py`, using
+- [X] T006 [P] [US1] Write the intake-agent tests in `tests/unit/test_intake.py`, using
   `structured_model(IntakeLlmOutput(...))`:
   - `test_ac_1_3_model_suggested_name_is_replaced_with_person_placeholder`
   - `test_ac_1_4_suggestion_not_verbatim_in_text_is_ignored` (the text is otherwise unchanged)

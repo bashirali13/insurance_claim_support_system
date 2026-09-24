@@ -33,6 +33,10 @@ markers = [
 [tool.ruff]
 line-length = 100
 target-version = "py313"
+src = ["src", "."]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["claim_intake", "tests"]
