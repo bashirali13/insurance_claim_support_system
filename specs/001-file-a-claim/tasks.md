@@ -186,7 +186,7 @@ The rule tables are also tested as pure functions.
   - `IncidentType`, `UmUimSubtype`, `TriState`, `MissingItem`, `CoverageLine`
   - `Contradiction`, `AssessmentLlmOutput` ("key_facts at most 6 short items"), and
     `ClaimAssessment`
-- [ ] T013 [US2] Implement `src/claim_intake/agents/assessment.py`: `assess(sanitized, agents)`,
+- [X] T013 [US2] Implement `src/claim_intake/agents/assessment.py`: `assess(sanitized, agents)`,
   which calls the assessment agent (instructions per contracts/agents.md, narrative in
   `<customer_narrative>` tags) and completes `ClaimAssessment` via the T012 rules. Register the
   assessment agent in `create_agents`.
