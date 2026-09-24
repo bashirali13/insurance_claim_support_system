@@ -114,7 +114,7 @@ and the manual-review flag. Model suggestions come from `structured_model`.
 
 ### Implementation for User Story 1
 
-- [ ] T007 [US1] Implement `src/claim_intake/pii.py` to make T005 pass:
+- [X] T007 [US1] Implement `src/claim_intake/pii.py` to make T005 pass:
   - `scrub_patterns(text) -> (str, list[PiiType])` and `find_pii(text) -> list[PiiType]`
   - ordered detectors (SSN and CARD before PHONE; for overlaps, the earliest start then the longest
     match wins)
