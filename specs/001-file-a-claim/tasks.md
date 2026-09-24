@@ -422,7 +422,7 @@ runs.
   - the manual walkthrough and the failure spot-checks
 - [X] T039 Run the final `uv run ruff format .` and `uv run ruff check .` and a full
   `uv run pytest`. Update `docs/user-experience.md` if any wording changed during implementation.
-- [ ] T040 Write `docs/prompt-history/04-implementation-001.md` (decisions, the R2 outcome, the
+- [X] T040 Write `docs/prompt-history/04-implementation-001.md` (decisions, the R2 outcome, the
   watch-item results), push the branch, open the phase PR with `gh`, and present the
   phase-completion check to the user before merging.
 
