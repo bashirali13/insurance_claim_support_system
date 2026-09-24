@@ -377,7 +377,7 @@ CLI presents the menu.
     save → FAILED_OUTPUT)
   - status-only reports on failure
   - one event-log line per step
-- [ ] T033 [US5] Implement `src/claim_intake/config.py`: `Settings`, `ConfigError`,
+- [X] T033 [US5] Implement `src/claim_intake/config.py`: `Settings`, `ConfigError`,
   `load_settings()` (python-dotenv; requires `OPENROUTER_API_KEY` and `MODEL_NAME`), and
   `build_model(settings)` → `OpenRouterModel(settings.model_name,
   provider=OpenRouterProvider(api_key=...), settings={temperature: 0, timeout: 30})`.
