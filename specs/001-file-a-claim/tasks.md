@@ -294,11 +294,11 @@ and summary (checked by a validator); templates render everything else.
   - the customer-wording tables for `MissingItem` and `Team` (`SPECIAL_REVIEW` has no wording)
   - `format_follow_up(date)` → "Friday, Sep 25"
   - Add `CustomerReply` and `InternalReport` to contracts.
-- [ ] T025 [US4] Implement `src/claim_intake/agents/summary.py`: `compose(...)` with the summary
+- [X] T025 [US4] Implement `src/claim_intake/agents/summary.py`: `compose(...)` with the summary
   agent plus an `@output_validator` that raises `ModelRetry` on a placeholder pattern
   `\[[A-Z_]+_\d+\]`, any `find_pii` match, or an R8 forbidden term. Add `SummaryLlmOutput`
   ("recorded_points 1–5") to contracts, and register the summary agent in `create_agents`.
-- [ ] T026 [US4] Refactor pass on `reporting.py` and `agents/summary.py`, keeping the suite green.
+- [X] T026 [US4] Refactor pass on `reporting.py` and `agents/summary.py`, keeping the suite green.
 
 **Checkpoint**: US4 is complete. `uv run pytest -k "ac_1 or ac_2 or ac_3 or ac_4"` is green.
 
