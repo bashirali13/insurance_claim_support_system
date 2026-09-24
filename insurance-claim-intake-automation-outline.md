@@ -39,24 +39,36 @@ Create an AI car insurance claim support coordinator capable of:
 | 1 | File a new claim | Free-text description of what happened | Full pipeline; creates a new claim record and ID |
 | 2 | Check claim status | Claim ID | Deterministic lookup; plain-language status reply with no model call required |
 | 3 | Add or correct details | Claim ID + free text | Scrubs, assesses the update against the existing record, flags new contradictions, appends to claim history |
-| 4 | Report a problem | Claim ID (optional) + free text | Scrubs, analyzes sentiment and issue category, routes to the correct team |
+| 4 | Get help with my claim | Claim ID (optional) + free text | Scrubs, categorizes the request (complaint, delay, rental, towing, repair shop, question, talk to a person), routes each part to the correct team |
 
-Out of scope for v1: payments, rental or repair-shop scheduling, claim cancellation, policy changes, and multi-turn conversations.
+Out of scope for v1: payments, actually booking rentals, tows, or repair shops (the system routes these requests to a team), claim cancellation, policy changes, and multi-turn conversations.
 
-## Claim Types (Car Only)
+The full customer-facing walkthrough, with terminal mockups and what happens behind the scenes, is in [`docs/user-experience.md`](docs/user-experience.md).
 
-Controlled categories, based on how major US auto insurers commonly split claims:
+## Coverage Baseline and Incident Types (Car Only)
 
-- **Collision:** accident with another vehicle or an object
-- **Theft:** whole vehicle or parts or contents stolen
-- **Vandalism:** intentional damage by others
-- **Weather / natural event:** hail, flood, wind, fallen tree
-- **Glass:** windshield or window damage only
-- **Animal strike:** e.g., hitting a deer
-- **Liability:** the customer damaged someone else's property or injured someone
-- **Uninsured / underinsured motorist (UM/UIM):** see below
+The system's vocabulary is based on the coverages most US auto insurers offer:
+
+- **Six core coverages:** liability (bodily injury and property damage), collision, comprehensive, uninsured/underinsured motorist, personal injury protection (PIP), and medical payments (MedPay).
+- **Common add-ons:** rental reimbursement, roadside/towing, and gap or new-car replacement.
+
+The details are in `docs/user-experience.md` §1.
+
+- **The model extracts facts.** Deterministic code maps those facts to **coverage lines to review** (e.g., "other driver fled" → UM/UIM; "passenger hurt" → PIP/MedPay; "hit a fence" → liability property damage).
+- **The system has no policy data** and never says whether something is covered.
+
+**Incident types** (what happened):
+- **Collision:** with another vehicle or an object, or a rollover
+- **Theft:** whole vehicle or parts or contents
+- **Vandalism**
+- **Weather:** hail, flood, wind, falling tree
+- **Fire**
+- **Glass**
+- **Animal strike**
 - **Unknown:** not enough information to classify
-- **Mixed:** multiple unrelated incidents in one submission (escalated; the customer is asked to file separately)
+- **Mixed:** multiple unrelated incidents; escalated, and the customer is asked to file separately
+
+Liability and UM/UIM are **coverage lines triggered by facts about other parties**, not incident types. For example, a hit-and-run is a `COLLISION` with the UM/UIM line triggered.
 
 ### Uninsured / Underinsured Motorist (UM/UIM)
 
@@ -102,7 +114,7 @@ The real project team roles map directly to the software agents. The orchestrato
 | File a new claim | ✓ | ✓ | ✓ | ✓ |
 | Check claim status | — | — | — | template only |
 | Add or correct details | ✓ | ✓ (update mode) | ✓ | ✓ |
-| Report a problem | ✓ | — | ✓ (routing) | ✓ |
+| Get help with my claim | ✓ | — | ✓ (request categories) | ✓ |
 
 ### Orchestrator
 
@@ -196,7 +208,8 @@ Routing is deterministic, based on indicators and categories:
 | Team | Receives |
 |------|----------|
 | Claims Adjuster | Injury claims, UM/UIM escalations, contradictions, mixed incidents |
-| Customer Relations | Complaints, service problems, customer distress |
+| Customer Relations | Complaints, service delays, customer distress |
+| Claims Services | Rental, towing, repair-shop, and appraisal requests |
 | Special Review | Configured risk indicators (never labeled as fraud) |
 | Privacy Review | PII that couldn't be safely confirmed as scrubbed |
 | Policy Services | Contact-information change requests (the value is redacted; a human completes the update) |
@@ -219,26 +232,29 @@ class SanitizedSubmission(BaseModel):  # the only text type downstream agents ac
     requires_manual_review: bool
 
 class ClaimAssessment(BaseModel):
-    claim_type: ClaimType
+    incident_type: IncidentType
     um_uim_subtype: UmUimSubtype | None
     damage_types: list[DamageType]
     injury_present: bool | None
+    other_party_involved: bool | None
+    vehicle_drivable: bool | None
     key_facts: list[str]
-    missing_information: list[str]
+    missing_information: list[str]          # computed by per-incident checklist
     contradictions: list[str]
+    coverage_lines_to_review: list[CoverageLine]  # computed by rules from facts
 
 class RiskAssessment(BaseModel):
     sentiment: Sentiment
     risk_indicators: list[RiskIndicator]
-    issue_category: IssueCategory | None
-    risk_level: RiskLevel            # computed by rules
-    escalation_team: EscalationTeam | None  # computed by rules
+    request_categories: list[RequestCategory]   # "Get help" task only
+    risk_level: RiskLevel                       # computed by rules
+    escalation_teams: list[EscalationTeam]      # computed by rules
     rationale: str
 
 class ClaimRecord(BaseModel):       # persisted as sanitized JSON only
     claim_id: str
     status: ClaimStatus
-    claim_type: ClaimType
+    incident_type: IncidentType
     history: list[ClaimHistoryEntry]
 
 class TaskResult(BaseModel):
@@ -283,16 +299,18 @@ Every failure writes a **status-only report** (claim ID, status, failed step, er
 - **Interface:** simple terminal menu
 - **Storage:** local filesystem only: sanitized claim records in `data/claims/`, reports in `output/`
 
-## Feature Order (SpecKit Specs)
+## Development Phases
 
-Each spec gets its own `NNN-` branch. Sub-feature branches (`feat/NNN-…`) merge back into it.
+Branches exist **only for big phases**, one branch and one PR each. Inside a phase, progress is
+recorded through well-described commits. Each phase from 001 onward is one SpecKit feature whose
+user stories are ordered by priority.
 
-1. **001-pii-scrubbing:** layered PII scrubbing as a standalone, heavily tested module
-2. **002-file-new-claim:** contracts, orchestrator walking skeleton, assessment, risk, summary, claim record, terminal menu entry
-3. **003-check-claim-status:** claim lookup and status reply
-4. **004-update-existing-claim:** add or correct details, update-mode assessment, history, contact-change routing
-5. **005-report-a-problem:** issue categorization and team routing
-6. **006-hardening:** end-to-end adversarial suite and sample reports
+| Phase branch | Contents |
+|---|---|
+| **000-project-foundation** | Outline, tooling, constitution, CLAUDE.md, UX walkthrough, prompt history |
+| **001-file-a-claim** | Menu shell; contracts; orchestrator; layered PII scrubbing; assessment with coverage-line rules; sentiment and risk with routing; summary reply and report; sanitized claim record. Stories, in order: P1 PII scrubbing → P2 claim assessment → P3 risk and routing → P4 customer reply and report → P5 end-to-end "File a new claim" |
+| **002-existing-claim-support** | Seeded sample claims; Check status; Add or correct details (update mode, history, contact-change routing); Get help (request categories, multi-team routing) |
+| **003-hardening-and-release** | End-to-end adversarial suite, `--trace` mode, sample reports, architecture diagram, README |
 
 ## Development Process
 
@@ -338,7 +356,7 @@ Each spec gets its own `NNN-` branch. Sub-feature branches (`feat/NNN-…`) merg
  1. File a new claim
  2. Check claim status
  3. Add or correct details on a claim
- 4. Report a problem
+ 4. Get help with my claim
  5. Exit
 
 Choose an option: 1
