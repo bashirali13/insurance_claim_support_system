@@ -121,7 +121,7 @@ and the manual-review flag. Model suggestions come from `structured_model`.
   - `[TYPE_n]` placeholders numbered per type by first appearance (research R6)
   - Add `PiiType` to `src/claim_intake/contracts.py` with the values `PHONE, EMAIL, SSN, CARD, DOB,
     DRIVER_LICENSE, VIN, PLATE, POLICY_NUMBER, ADDRESS, PERSON, OTHER_IDENTIFIER`.
-- [ ] T008 [US1] Implement the intake agent to make T006 pass:
+- [X] T008 [US1] Implement the intake agent to make T006 pass:
   - `src/claim_intake/agents/__init__.py`: an `Agents` dataclass and `create_agents(model)` (intake
     agent only for now, `retries=2`)
   - `src/claim_intake/agents/intake.py`: `scrub(raw, agents)`, which runs regex → suggestions

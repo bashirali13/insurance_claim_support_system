@@ -162,3 +162,18 @@ def scrub_patterns(text: str) -> tuple[str, list[PiiType]]:
         text = text[: m.start] + placeholders[(m.pii_type, m.value)] + text[m.end :]
     return text, _sorted_types(m.pii_type for m in matches)
 
+
+
+def replace_outside_placeholders(text: str, value: str, replacement: str) -> str:
+    """Replace `value` everywhere except inside existing placeholders."""
+    parts = PLACEHOLDER.split(text)
+    kept = PLACEHOLDER.findall(text)
+    out = [parts[0].replace(value, replacement)]
+    for placeholder, part in zip(kept, parts[1:], strict=True):
+        out.append(placeholder)
+        out.append(part.replace(value, replacement))
+    return "".join(out)
+
+
+def appears_outside_placeholders(text: str, value: str) -> bool:
+    return any(value in part for part in PLACEHOLDER.split(text))
