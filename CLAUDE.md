@@ -1,11 +1,13 @@
 # CLAUDE.md
 
 A **car insurance claim automation customer support system**. Customers use a terminal menu to file
-a new claim, check claim status, add or correct details on an existing claim, or report a problem
-that gets routed to the correct human team.
+a new claim, check claim status, add or correct details on an existing claim, or get help with a
+claim (complaints and rental, towing, or repair requests) that gets routed to the correct human
+team.
 
 - Governing rules: `.specify/memory/constitution.md`. It wins any conflict with this file.
 - Scope and background: `insurance-claim-intake-automation-outline.md`.
+- How the product looks and behaves in the terminal: `docs/user-experience.md`.
 - Feature specs: `specs/NNN-feature/` (`spec.md`, `plan.md`, `tasks.md`).
 
 ## Commands
@@ -54,13 +56,13 @@ Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`
 
 ## Git
 
-- Branches: SpecKit `NNN-feature` parents; `spec/`, `feat/`, `chore/`, `docs/`, `test/`, `fix/`
-  for other work. Sub-branches use a hyphen suffix (`feat/001-pii-scrubbing-detectors`), never a
-  nested slash.
+- **Branches are for big phases only**: `000-project-foundation`, `001-file-a-claim`,
+  `002-existing-claim-support`, `003-hardening-and-release`. Never create branches for single
+  documents or sub-features. Use commits.
 - Conventional Commits following the TDD rhythm (`test:` → `feat:` → `refactor:`). End commit
   messages with the Co-Authored-By trailer.
-- Merge only when the suite is green and ruff is clean. PRs go through the `gh` CLI. Claude may
-  merge docs/chore PRs; the user merges spec and feature PRs.
+- One PR per phase via the `gh` CLI, merged when the suite is green and ruff is clean. The user
+  merges phase PRs unless they hand the merge to Claude.
 
 ## Documentation
 

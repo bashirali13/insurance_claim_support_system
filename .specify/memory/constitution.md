@@ -119,17 +119,17 @@ and route work correctly, not to replace those decisions.
 
 ## Development Workflow & Quality Gates
 
-- **Branches:**
-  - SpecKit numbered branches (`NNN-feature`) are feature parents.
-  - Typed branches (`spec/`, `feat/`, `chore/`, `docs/`, `test/`, `fix/`) are used for other
-    work.
-  - Sub-feature branches use a hyphen suffix (e.g., `feat/001-pii-scrubbing-detectors`), never a
-    nested slash.
+- **Branches are for big phases only.**
+  - Each phase has one branch in SpecKit's numbered style (`000-project-foundation`,
+    `001-file-a-claim`, …). From 001 on, each phase is one SpecKit feature.
+  - Documents, setup steps, and sub-features MUST NOT get their own branches. Progress inside a
+    phase is recorded through commits.
 - **Commits:** Conventional Commits that follow the TDD rhythm (`test:` → `feat:` → `refactor:`).
-- **Merge gate:** the full suite passes and `ruff check` is clean. Red commits MUST NOT be merged
-  upward.
-- **Pull requests:** opened with the `gh` CLI. Claude MAY merge docs and chore PRs. Spec and
-  feature PRs are reviewed and merged by the user.
+  Each commit is small and does one thing.
+- **Merge gate:** a phase merges only when the full suite passes and `ruff check` is clean on the
+  branch tip. Red commits are expected inside the branch history.
+- **Pull requests:** one PR per phase, opened with the `gh` CLI. The user reviews and merges phase
+  PRs, unless the user explicitly hands a merge to Claude.
 - **Prompt history:** a summary is added to `docs/prompt-history/` at key moments (after the
   constitution, after each approved spec, at major pivots). Each summary records the objective,
   key prompts, recommendations, decisions, pushbacks, clarifications, and deferred scope.
