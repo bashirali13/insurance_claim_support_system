@@ -206,11 +206,11 @@ date.
 
 ### Tests for User Story 3 (write first; they must fail)
 
-- [ ] T015 [P] [US3] Write the date tests in `tests/unit/test_dates.py`:
+- [X] T015 [P] [US3] Write the date tests in `tests/unit/test_dates.py`:
   - `test_ac_3_8_friday_plus_one_business_day_is_monday`
   - `test_ac_3_8_thursday_plus_two_business_days_is_monday`
   - `test_ac_3_8_saturday_plus_one_business_day_is_tuesday`
-- [ ] T016 [P] [US3] Append the risk-rule tests to `tests/unit/test_rules.py`:
+- [X] T016 [P] [US3] Append the risk-rule tests to `tests/unit/test_rules.py`:
   - `test_ac_3_2_no_indicators_low_risk_adjuster_two_days`
   - `test_ac_3_3_injury_sets_indicator_adjuster_one_day`
   - `test_ac_3_4_risk_level_table_*` (parametrized: 0 → LOW, 1 → MEDIUM, 2 → HIGH, and a lone
@@ -226,7 +226,7 @@ date.
   - `test_ac_3_4_high_risk_gets_one_business_day`
   - `test_ac_3_4_fact_based_indicators_*` (parametrized: hit-and-run without a police report,
     a contradiction, a missing date or location, a MIXED incident)
-- [ ] T017 [P] [US3] Write the risk-agent tests in `tests/unit/test_risk.py`, using
+- [X] T017 [P] [US3] Write the risk-agent tests in `tests/unit/test_risk.py`, using
   `structured_model(RiskLlmOutput(...))` and `fixed_now`:
   - `test_ac_3_1_sentiment_is_one_of_five_values`
   - `test_ac_3_7_model_injection_flag_sets_indicator_and_special_review`
