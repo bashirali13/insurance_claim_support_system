@@ -237,7 +237,7 @@ date.
 
 ### Implementation for User Story 3
 
-- [ ] T018 [US3] Implement `src/claim_intake/dates.py`:
+- [X] T018 [US3] Implement `src/claim_intake/dates.py`:
   `add_business_days(start: date, n: int) -> date`, which never counts the start date and skips
   Saturday and Sunday (research R10).
 - [ ] T019 [US3] Implement in `src/claim_intake/rules.py`:
