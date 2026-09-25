@@ -38,7 +38,7 @@ when a test needs them.
   - update `test_ac_5_13_event_log_lines_have_only_allowed_fields` so the allowed keys include
     `task` (FR-218 extends AC-5.13)
   - add `test_ac_5_13_filing_event_lines_have_task_file_claim`
-- [ ] T003 Green:
+- [X] T003 Green:
   - add `MenuTask` (`FILE_CLAIM, UPDATE_DETAILS, GET_HELP`) and `EventLogEntry.task: MenuTask` to
     `src/claim_intake/contracts.py`
   - add a `task` attribute to `orchestration._Run` (default `FILE_CLAIM` for `file_claim`),

@@ -23,6 +23,7 @@ from claim_intake.contracts import (
     EventLogEntry,
     HistoryEntry,
     InternalReport,
+    MenuTask,
     PipelineStep,
     ProcessingStatus,
     RawSubmission,
@@ -91,16 +92,18 @@ def _with_model_retries[T](call: Callable[[], T]) -> T:
 class _Run:
     """One filing: tracks the claim number and writes one event-log line per step."""
 
-    def __init__(self, deps: Deps):
+    def __init__(self, deps: Deps, task: MenuTask = MenuTask.FILE_CLAIM):
         self.deps = deps
         self.filed_at = deps.now()
         self.claim_id: str | None = None
+        self.task = task
 
     def log(self, step: PipelineStep, outcome: ProcessingStatus, started: float, error=None):
         self.deps.events.append(
             EventLogEntry(
                 ts=self.deps.now(),
                 claim_id=self.claim_id,
+                task=self.task,
                 step=step,
                 outcome=outcome,
                 duration_ms=round((time.perf_counter() - started) * 1000),

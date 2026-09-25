@@ -268,11 +268,18 @@ class TaskResult(Contract):
     report_path: str | None
 
 
+class MenuTask(StrEnum):
+    FILE_CLAIM = "FILE_CLAIM"
+    UPDATE_DETAILS = "UPDATE_DETAILS"
+    GET_HELP = "GET_HELP"
+
+
 class EventLogEntry(Contract):
-    """One text-free line in logs/events.log (FR-033)."""
+    """One text-free line in logs/events.log (FR-033, FR-218)."""
 
     ts: datetime
     claim_id: str | None
+    task: MenuTask
     step: PipelineStep
     outcome: ProcessingStatus
     duration_ms: int
