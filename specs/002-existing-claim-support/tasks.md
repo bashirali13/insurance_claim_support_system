@@ -280,12 +280,12 @@ routing, the help record, the reply, and the claim history.
   adjustments, using prompt examples that never come from fixtures.
 - [X] T038 [P] Update `docs/customer-scenarios.md` E01–E12 to the sample claim numbers, and update
   `docs/user-experience.md` §5–7 if any wording changed.
-- [ ] T039 Run the `specs/002-existing-claim-support/quickstart.md` validation:
+- [X] T039 Run the `specs/002-existing-claim-support/quickstart.md` validation:
   - SC-206 AC coverage
   - the gitignore check
   - the manual walkthrough in a scratch folder
   - SC-201: time a status check
-- [ ] T040 Run the final `uv run ruff format .`, `uv run ruff check .`, and full `uv run pytest`.
+- [X] T040 Run the final `uv run ruff format .`, `uv run ruff check .`, and full `uv run pytest`.
 - [ ] T041 Write `docs/prompt-history/06-implementation-002.md`, push the branch, open the phase PR
   with `gh`, and present the phase-completion check before merging.
 
