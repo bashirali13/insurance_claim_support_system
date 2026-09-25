@@ -180,7 +180,7 @@ check the reply, the saved record, and the history.
 - [X] T018 [US7] In `src/claim_intake/agents/assessment.py`: the update-mode agent and
   `update(sanitized, saved_assessment, agents)` (saved facts labeled outside the tags; instructions
   per contracts/agents.md). Register `assessment_update` in `create_agents`.
-- [ ] T019 [US7] In `src/claim_intake/reporting.py`: `render_update_reply`,
+- [X] T019 [US7] In `src/claim_intake/reporting.py`: `render_update_reply`,
   `render_update_report`, and a task-wording parameter for `render_status_only_report` (phase
   001's calls pass "File a new claim").
 - [ ] T020 [US7] In `src/claim_intake/existing_claims.py`: `update_claim(claim_id, raw_text, deps,

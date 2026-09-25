@@ -11,6 +11,7 @@ from claim_intake.contracts import (
     ClaimRecord,
     ClaimStatus,
     CustomerReply,
+    FactChanges,
     IncidentType,
     InternalReport,
     MissingItem,
@@ -153,13 +154,35 @@ def _list_section(title: str, items: list[str]) -> list[str]:
     return ["", f"## {title}", *([f"- {i}" for i in items] or [NONE_RECORDED])]
 
 
-def _header(claim_id: str | None, filed_at: datetime, status: ProcessingStatus) -> list[str]:
+FILE_CLAIM_TASK = "File a new claim"
+UPDATE_TASK = "Add or correct details"
+
+
+def _header(
+    claim_id: str | None, filed_at: datetime, status: ProcessingStatus, task: str = FILE_CLAIM_TASK
+) -> list[str]:
     return [
         f"# Claim Intake Report — {claim_id or 'UNFILED'}",
         f"- **Processing status:** {status}",
-        "- **Task:** File a new claim",
+        f"- **Task:** {task}",
         f"- **Filed:** {filed_at:%Y-%m-%d %H:%M}",
     ]
+
+
+def _risk_section(risk: RiskAssessment) -> list[str]:
+    return [
+        "",
+        "## Sentiment and Risk",
+        f"- **Sentiment:** {risk.sentiment}",
+        f"- **Risk level:** {risk.risk_level}",
+        f"- **Indicators:** {', '.join(risk.indicators) or NONE_RECORDED}",
+        f"- **Rationale:** {risk.rationale}",
+    ]
+
+
+def _privacy_section(pii_types_removed: list[PiiType]) -> list[str]:
+    removed = ", ".join(pii_types_removed) or NONE_RECORDED
+    return ["", "## Privacy", f"- **Personal information types removed:** {removed}"]
 
 
 def render_report(
@@ -203,14 +226,7 @@ def render_report(
     lines += _list_section(
         "Contradictions", [f'"{c.statement_a}" vs. "{c.statement_b}"' for c in a.contradictions]
     )
-    lines += [
-        "",
-        "## Sentiment and Risk",
-        f"- **Sentiment:** {risk.sentiment}",
-        f"- **Risk level:** {risk.risk_level}",
-        f"- **Indicators:** {', '.join(risk.indicators) or NONE_RECORDED}",
-        f"- **Rationale:** {risk.rationale}",
-    ]
+    lines += _risk_section(risk)
     lines += [
         "",
         "## Routing and Follow-up",
@@ -218,12 +234,95 @@ def render_report(
         f"- **Follow up by:** {risk.follow_up_date.isoformat()} "
         f"({risk.follow_up_business_days} business day(s))",
     ]
+    lines += _privacy_section(pii_types_removed)
+    lines += ["", "---", DECISION_NOTICE, ""]
+    return InternalReport(markdown="\n".join(lines))
+
+
+# --- Updates (specs/002 US7, contracts/cli.md option 3) -----------------------------------------
+
+# Teams with their own line in an update reply, so they're left out of "What happens next".
+_OWN_LINE_TEAMS = {Team.POLICY_SERVICES}
+
+
+def _change_lines(changes: FactChanges) -> list[str]:
+    lines = []
+    for c in changes.added:
+        detail = f" ({c.new})" if c.field == "damage_areas" else ""
+        lines.append(f"Added: {FIELD_WORDING[c.field]}{detail}")
+    for c in changes.corrected:
+        old, new = c.old or "unknown", c.new or "unknown"
+        lines.append(f"Corrected: {FIELD_WORDING[c.field]} ({old} → {new})")
+    return lines
+
+
+def render_update_reply(
+    claim_id: str,
+    changes: FactChanges,
+    *,
+    contact_change_requested: bool,
+    teams: list[Team],
+    routing_date: date,
+    pending_date: date,
+    contact_date: date,
+    missing: list[MissingItem],
+) -> CustomerReply:
+    lines = [f"Thanks, your claim {claim_id} is updated.", *_bullets(_change_lines(changes))]
+    if changes.sensitive:
+        fields = ", ".join(FIELD_WORDING[c.field] for c in changes.sensitive)
+        by = format_follow_up(pending_date)
+        lines += [f"  • An adjuster will confirm this change with you by {by}:", f"    {fields}"]
+    if contact_change_requested:
+        by = format_follow_up(contact_date)
+        lines += [
+            f"  • Our Policy Services team will confirm your new contact details with you by {by}.",
+            "    We didn't store them here.",
+        ]
+    by = format_follow_up(routing_date)
+    next_steps = [
+        f"{TEAM_ROLE[t]} will contact you by {by}."
+        for t in teams
+        if t in TEAM_ROLE and t not in _OWN_LINE_TEAMS
+    ]
+    if next_steps:
+        lines += ["", "What happens next:", *_bullets(next_steps)]
+    if missing:
+        lines += ["", "Still needed:", *_bullets([MISSING_WORDING[m] for m in missing])]
+    return CustomerReply(text="\n".join(lines))
+
+
+def render_update_report(
+    claim_id: str,
+    filed_at: datetime,
+    changes: FactChanges,
+    *,
+    contact_change_requested: bool,
+    submission: SanitizedSubmission,
+    assessment: ClaimAssessment,
+    risk: RiskAssessment,
+    teams: list[Team],
+    follow_up_date: date,
+) -> InternalReport:
+    def described(items):
+        return [f"{c.field}: {c.old or 'unknown'} → {c.new or 'unknown'}" for c in items]
+
+    lines = _header(claim_id, filed_at, ProcessingStatus.COMPLETED, UPDATE_TASK)
+    lines += _list_section("Added", [f"{FIELD_WORDING[c.field]}: {c.new}" for c in changes.added])
+    lines += _list_section("Corrected", described(changes.corrected))
+    lines += _list_section("Pending Adjuster Confirmation", described(changes.sensitive))
+    contact = ["Customer asked to change contact details (value not stored)"]
+    lines += _list_section("Contact Change", contact if contact_change_requested else [])
+    lines += _list_section(
+        "Missing Information", [MISSING_WORDING[m] for m in assessment.missing_information]
+    )
+    lines += _risk_section(risk)
     lines += [
         "",
-        "## Privacy",
-        f"- **Personal information types removed:** "
-        f"{', '.join(pii_types_removed) or NONE_RECORDED}",
+        "## Routing and Follow-up",
+        f"- **Teams:** {', '.join(teams)}",
+        f"- **Follow up by:** {follow_up_date.isoformat()}",
     ]
+    lines += _privacy_section(submission.pii_types_removed)
     lines += ["", "---", DECISION_NOTICE, ""]
     return InternalReport(markdown="\n".join(lines))
 
@@ -234,9 +333,10 @@ def render_status_only_report(
     status: ProcessingStatus,
     failed_step: PipelineStep | None,
     error_category: str | None,
+    task: str = FILE_CLAIM_TASK,
 ) -> InternalReport:
     """Used for every failure and for privacy review: no narrative, no facts."""
-    lines = _header(claim_id, filed_at, status)
+    lines = _header(claim_id, filed_at, status, task)
     lines += [
         f"- **Failed step:** {failed_step or NONE_RECORDED}",
         f"- **Error category:** {error_category or NONE_RECORDED}",
