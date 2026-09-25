@@ -10,7 +10,7 @@ uv run ruff check . && uv run ruff format --check .
 ```
 
 **Expected:** all green, including phase 001's tests (with AC-5.13 now expecting `task`). Every
-AC-6.1 … AC-8.12 (including AC-7.12) appears in a test name (SC-206):
+AC-6.1 … AC-8.13 (including AC-7.12) appears in a test name (SC-206):
 
 ```bash
 uv run pytest --collect-only -q | grep -oE "test_ac_[678]_[0-9]+" | sort -u

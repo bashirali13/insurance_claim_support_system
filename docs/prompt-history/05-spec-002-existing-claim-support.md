@@ -81,3 +81,35 @@ with no remaining ambiguity.
 `/speckit-plan` for 002: update-mode and help-mode agent contracts, the field-by-field diff,
 pending changes, the help record and reference numbering, the sample data, and the event log `task`
 field, all checked against the constitution.
+
+## Amendment: Plan, Tasks, and Analyze
+
+**Prompts (condensed):** *"Spec approved. Write 05, then plan."* → *"Looks good. Continue with
+tasks."* → `/speckit-analyze` → *"Apply directly and re-run analyze."*
+
+**Plan highlights:**
+- **Code decides what changed.** The update model returns the full updated facts; a pure diff
+  produces Added, Corrected, and Sensitive.
+- **Modes, not new agents.** Update and help are *modes* of existing agents, which keeps the
+  four-agent rule.
+- **Templates for status and update replies**, with no model call.
+- **Shared `CLM`/`HELP` numbering.**
+- **Backward-compatible claim records.**
+
+**Spec fixes made along the way (always spec-first):**
+
+| When | Fix |
+|---|---|
+| Plan | FR-218 vs AC-6.8 conflict: status checks write no event-log line |
+| Plan | New AC-8.12: the Get help privacy-review outcome was unspecified |
+| Plan review | The user confirmed that *additions* to sensitive facts apply immediately; only corrections are held (AC-7.4) |
+| Tasks | AC-7.8, AC-8.9, and AC-8.1 extended so the event-log `task` and help-opening validation are test-driven |
+| Analyze | **CRITICAL C1:** new AC-8.13 for the Get help failure outcome (FR-217 had no customer-visible behavior) |
+| Analyze | M1: SC-202 test over every field kind; M2: FR-208 replace rule applies only to applied updates (privacy path adds `PRIVACY_REVIEW`) |
+| Analyze | Low-severity fixes: an FR-219 no-write assertion, a distressed + out-of-scope reply test, notes on log `claim_id`, `FactChanges`, and spec 001 AC-5.1 superseded |
+
+**Result:** 34 ACs (AC-6.1–AC-8.13), all with named tests; 41 tasks; **0 critical issues** on
+re-analysis.
+
+**Lesson (again):** the analyze step catches behavior the design builds but the spec never states.
+This time it was a failure path. Phase 001's lesson held: most gaps are *unhappy paths*.

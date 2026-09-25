@@ -81,6 +81,10 @@ Phase 001 fields, plus **`pending_changes: list[PendingChange] = []`**.
 
 `ClaimRecord.follow_up_date` = the earliest promise date.
 
+**Privacy path** (AC-7.10, update not applied): teams = existing + `PRIVACY_REVIEW`,
+`follow_up_date` = +3 business days, and history += `PRIVACY_REVIEW_OPENED`. FR-208's replace rule
+does not apply here.
+
 ### Field wording for update replies and status (reporting table)
 | Field | Customer wording |
 |---|---|
@@ -149,6 +153,8 @@ Teams are deduplicated (keeping the fewest days) and ordered in `Team` declarati
 ## Event log
 
 `EventLogEntry` gains **`task: MenuTask`** (FR-218). Phase 001's filing flow sets `FILE_CLAIM`.
+The existing `claim_id` field holds the claim number, or for an unlinked Get help request the
+help reference once it's issued. It isn't renamed, so phase 001 log lines stay valid.
 
 ---
 

@@ -32,6 +32,7 @@ acceptance criteria **AC-6.x–AC-8.x**. IDs stay unique across the project.
 - Plan-time gap fix: AC-8.12 added so the Get help privacy-review outcome (required by FR-217 but previously unspecified for customers) has an acceptance criterion, matching phase 001 AC-5.8 and AC-7.10.
 - Q (plan review): Does "sensitive" include adding a previously unknown sensitive fact? → A: No. Only corrections of a known value are held; additions (unknown → known) apply immediately (AC-7.4).
 - Task-time trace fix: AC-7.8 and AC-8.9 now name the event-log `task` value, and AC-8.1 names the opening-line safety check, so FR-218 and FR-216 behavior is test-driven.
+- Analyze remediation (user-approved): added AC-8.13 (Get help failure outcome, FR-217); FR-208 states the replace rule applies only to applied updates (privacy path adds `PRIVACY_REVIEW`).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -213,6 +214,10 @@ number, then check the categories, teams, dates, reference number, saved help re
     follow-up, with no text, categories, or sentiment), a status-only report is written, and the
     customer sees "We've received your request. A specialist will review it by <date>." plus the
     reference.
+13. **AC-8.13**: **Given** the triage or reply model is unavailable or keeps returning invalid
+    output, **When** a help request fails, **Then** the customer sees "We couldn't finish processing
+    right now. Please try again shortly.", no help record or reference is created, a linked claim is
+    unchanged, and a status-only report is written (FR-217).
 
 ---
 
@@ -278,7 +283,9 @@ number, then check the categories, teams, dates, reference number, saved help re
   the latest computed result, plus Claims Adjuster when a pending change exists (FR-209) and Policy
   Services when a contact change is requested (FR-210). This is a deliberate trade-off (see
   Clarifications): previously routed teams are not carried over, but the status never
-  de-escalates.
+  de-escalates. The replace rule applies only to **applied** updates. On the privacy path
+  (AC-7.10) the update is not applied, so teams = existing teams + `PRIVACY_REVIEW`, and the
+  follow-up date becomes 3 business days out.
 - **FR-209**: Sensitive changes MUST NOT overwrite the saved fact. Each is stored on the claim as a
   pending change (field, requested value, requested-at), and Claims Adjuster is routed with a
   1-business-day follow-up. Rules keep using the original value until staff confirm (confirmation
@@ -336,7 +343,7 @@ number, then check the categories, teams, dates, reference number, saved help re
   events `DETAILS_UPDATED` and `HELP_REQUESTED` (plus `PRIVACY_REVIEW_OPENED` reused for updates),
   and a list of **pending changes** (field, requested value, requested-at) awaiting adjuster
   confirmation.
-- **Update Result**: added items, corrected items (field, old value, new value), sensitive items,
+- **Update Result** (`FactChanges` in the data model): added items, corrected items (field, old value, new value), sensitive items,
   contact-change flag, and the recomputed assessment and routing.
 - **Help Request Record**: reference number, optional claim number, sentiment, categories, teams
   with follow-up dates, filed timestamp, and history. Sanitized, and stored separately from claims.
@@ -355,7 +362,7 @@ number, then check the categories, teams, dates, reference number, saved help re
   of an evaluation set of at least 14 fictional help requests (E08–E12 plus variants).
 - **SC-205**: Zero personal values appear in any reply, report, claim record, help record, or event
   log line across all automated and live checks.
-- **SC-206**: Every acceptance criterion AC-6.1 to AC-8.12 (including AC-7.12) is verified by at
+- **SC-206**: Every acceptance criterion AC-6.1 to AC-8.13 (including AC-7.12) is verified by at
   least one automated check that names it.
 
 ## Assumptions

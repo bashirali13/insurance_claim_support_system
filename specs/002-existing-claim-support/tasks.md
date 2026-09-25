@@ -78,7 +78,8 @@ is involved.
     `test_ac_5_1_options_3_and_4_say_coming_soon` (option 2 now works, FR-220; options 3 and 4
     are replaced in T016/T021 and T028/T034)
   - add `test_ac_6_1_option_2_prints_status_for_sample_claim`
-  - add `test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu`
+  - add `test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu` (also asserts that no
+    report or event-log line is written, FR-219)
   - add `test_ac_6_4_unknown_claim_number_message`
   - add `test_ac_6_8_status_check_calls_no_model_and_writes_nothing` (deps built with
     `failing_model`; the directory snapshot before and after is identical)
@@ -127,6 +128,9 @@ check the reply, the saved record, and the history.
   - `test_ac_7_1_police_report_unknown_to_yes_is_added`
   - `test_ac_7_1_new_damage_items_are_added_and_list_never_shrinks`
   - `test_ac_7_2_changed_incident_time_is_a_corrected_change_and_applied`
+  - `test_ac_7_2_diff_rules_for_every_field_kind` (parametrized over every row of the research R2
+    table, including `location`, `vehicle_drivable`, `other_property_damaged`, `um_uim_subtype`,
+    and value → unknown; SC-202)
   - `test_ac_7_4_injury_yes_to_no_is_sensitive_and_saved_value_kept`
   - `test_ac_7_4_incident_type_change_is_sensitive`
   - `test_ac_7_4_injury_unknown_to_yes_is_added_and_applied_immediately`
@@ -157,7 +161,8 @@ check the reply, the saved record, and the history.
   - `test_ac_7_6_no_change_update_writes_nothing`
   - `test_ac_7_8_update_writes_report_and_event_lines_with_update_task`
   - `test_ac_7_9_model_failure_leaves_claim_unchanged_with_safe_message`
-  - `test_ac_7_10_residual_pii_opens_privacy_review_without_applying_update`
+  - `test_ac_7_10_residual_pii_opens_privacy_review_without_applying_update` (teams = existing +
+    `PRIVACY_REVIEW`, follow-up +3 business days, facts unchanged)
 - [ ] T016 [P] [US7] In `tests/integration/test_cli.py`:
   - add `test_ac_7_7_closed_claim_update_is_refused_without_asking_for_text`
   - add `test_ac_7_12_privacy_review_claim_update_is_refused_*` (future date → "by <date>";
@@ -224,6 +229,7 @@ routing, the help record, the reply, and the claim history.
   - `test_ac_8_5_file_a_claim_line_points_to_option_1`
   - `test_ac_8_7_help_reply_never_mentions_special_review`
   - `test_ac_8_9_help_report_sections_and_notice`
+  - `test_ac_8_8_distressed_out_of_scope_reply_has_redirect_and_team`
 - [ ] T027 [P] [US8] Write `tests/integration/test_get_help.py`:
   - `test_ac_8_1_service_delay_end_to_end_saves_record_report_reference`
   - `test_ac_8_3_complaint_and_speak_to_adjuster_route_both_teams`
@@ -232,6 +238,7 @@ routing, the help record, the reply, and the claim history.
   - `test_ac_8_7_lawyer_mention_routes_adjuster_next_day_without_naming_special_review`
   - `test_ac_8_9_no_personal_values_anywhere_and_event_lines_have_help_task`
   - `test_ac_8_12_residual_pii_opens_minimal_privacy_help_record`
+  - `test_ac_8_13_model_failure_creates_no_record_and_leaves_claim_unchanged`
 - [ ] T028 [P] [US8] In `tests/integration/test_cli.py`:
   - **remove** `test_ac_5_1_option_4_says_coming_soon` (FR-220 complete)
   - add `test_ac_8_11_enter_continues_without_claim_number`
@@ -253,8 +260,8 @@ routing, the help record, the reply, and the claim history.
 - [ ] T032 [US8] In `src/claim_intake/reporting.py`: `render_help_reply` and
   `render_help_report`.
 - [ ] T033 [US8] In `src/claim_intake/existing_claims.py`: `get_help(claim_id, raw_text, deps,
-  on_progress)` (routed, redirect-only, privacy, and claim-linking paths; `_Run` with task
-  `GET_HELP`).
+  on_progress)` (routed, redirect-only, privacy, failure, and claim-linking paths; `_Run` with
+  task `GET_HELP`).
 - [ ] T034 [US8] In `src/claim_intake/cli.py`: option 4 with the optional claim-number prompt.
   This removes the last "coming soon".
 - [ ] T035 [US8] Refactor pass (`existing_claims.py`, `cli.py`, agents), keeping the suite green.
@@ -330,3 +337,4 @@ the phase PR.
 | 5.13 (FR-218) | T002 | 7.10 | T015 | 8.10 | T024 |
 | | | 7.11 | T013 | 8.11 | T028 |
 | | | 7.12 | T016 | 8.12 | T027 |
+| | | | | 8.13 | T027 |

@@ -252,7 +252,8 @@ answers. Check the terminal output, the saved claim record, and the saved report
 1. **AC-5.1**: **Given** the app is started with valid configuration, **When** the menu appears,
    **Then** it shows the Northstar Auto Insurance header, the privacy notice, and options 1–5 as
    in `docs/user-experience.md` §3. Options 2–4 reply that they are "coming soon" and return to
-   the menu. **And given** the customer types anything other than 1–5, **Then** they see "Please
+   the menu. *(Superseded by `specs/002-existing-claim-support` FR-220: options 2–4 are live from
+   phase 002.)* **And given** the customer types anything other than 1–5, **Then** they see "Please
    choose a number from 1 to 5." and the menu is shown again.
 2. **AC-5.2**: **Given** option 1 is chosen, **When** the customer types several lines and then an
    empty line, **Then** all lines are captured as one narrative.
