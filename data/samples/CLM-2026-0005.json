@@ -1,0 +1,47 @@
+{
+  "claim_id": "CLM-2026-0005",
+  "status": "ESCALATED",
+  "filed_at": "2026-09-23T18:45:00",
+  "assessment": {
+    "incident_type": "COLLISION",
+    "um_uim_subtype": "HIT_AND_RUN",
+    "incident_date": "yesterday around 6pm",
+    "location": "Main St",
+    "damage_areas": [
+      "rear bumper"
+    ],
+    "customer_side_injured": "YES",
+    "others_injured": "NO",
+    "other_party_involved": "YES",
+    "other_property_damaged": "NO",
+    "vehicle_drivable": "UNKNOWN",
+    "police_report_mentioned": "UNKNOWN",
+    "key_facts": [
+      "Rear-ended at a red light",
+      "Other driver left the scene",
+      "Neck is sore"
+    ],
+    "contradictions": [],
+    "injury_present": "YES",
+    "missing_information": [
+      "POLICE_REPORT"
+    ],
+    "coverage_lines": [
+      "COLLISION",
+      "UM_UIM",
+      "PIP_MEDPAY"
+    ]
+  },
+  "teams": [
+    "CLAIMS_ADJUSTER"
+  ],
+  "follow_up_date": "2026-09-25",
+  "history": [
+    {
+      "at": "2026-09-23T18:45:00",
+      "event": "FILED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}

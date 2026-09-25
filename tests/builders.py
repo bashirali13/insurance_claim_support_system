@@ -6,7 +6,9 @@ from claim_intake import rules
 from claim_intake.contracts import (
     AssessmentLlmOutput,
     ClaimAssessment,
+    HelpTriageLlmOutput,
     IncidentType,
+    RequestCategory,
     RiskAssessment,
     RiskLevel,
     RiskLlmOutput,
@@ -85,6 +87,19 @@ def summary_output(**overrides) -> SummaryLlmOutput:
     }
     fields.update(overrides)
     return SummaryLlmOutput(**fields)
+
+
+def triage_output(**overrides) -> HelpTriageLlmOutput:
+    """A calm claim question with nothing flagged; override only what the test is about."""
+    fields = {
+        "sentiment": Sentiment.CALM,
+        "categories": [RequestCategory.CLAIM_QUESTION],
+        "legal_representation_mentioned": False,
+        "possible_prompt_injection": False,
+        "rationale": "Customer asked a question about their claim.",
+    }
+    fields.update(overrides)
+    return HelpTriageLlmOutput(**fields)
 
 
 def sanitized(text: str = "Rear-ended at a red light on Main St.") -> SanitizedSubmission:

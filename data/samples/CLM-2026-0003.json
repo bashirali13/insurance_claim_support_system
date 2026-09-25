@@ -1,0 +1,43 @@
+{
+  "claim_id": "CLM-2026-0003",
+  "status": "SUBMITTED",
+  "filed_at": "2026-09-22T15:00:00",
+  "assessment": {
+    "incident_type": "WEATHER",
+    "um_uim_subtype": null,
+    "incident_date": "Tuesday afternoon",
+    "location": "home in Cedar Falls",
+    "damage_areas": [
+      "roof",
+      "hood"
+    ],
+    "customer_side_injured": "NO",
+    "others_injured": "NO",
+    "other_party_involved": "NO",
+    "other_property_damaged": "NO",
+    "vehicle_drivable": "YES",
+    "police_report_mentioned": "NO",
+    "key_facts": [
+      "Hail storm dented the roof and hood",
+      "Windshield undamaged"
+    ],
+    "contradictions": [],
+    "injury_present": "NO",
+    "missing_information": [],
+    "coverage_lines": [
+      "COMPREHENSIVE"
+    ]
+  },
+  "teams": [
+    "CLAIMS_ADJUSTER"
+  ],
+  "follow_up_date": "2026-09-24",
+  "history": [
+    {
+      "at": "2026-09-22T15:00:00",
+      "event": "FILED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}

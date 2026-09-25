@@ -23,6 +23,7 @@ from claim_intake.contracts import (
     EventLogEntry,
     HistoryEntry,
     InternalReport,
+    MenuTask,
     PipelineStep,
     ProcessingStatus,
     RawSubmission,
@@ -32,7 +33,7 @@ from claim_intake.contracts import (
 )
 from claim_intake.dates import add_business_days
 from claim_intake.pii import find_pii
-from claim_intake.reporting import format_follow_up, render_status_only_report
+from claim_intake.reporting import TASK_WORDING, format_follow_up, render_status_only_report
 from claim_intake.storage import ClaimStore, EventLog, ReportWriter
 
 PROGRESS_LABELS = (
@@ -62,7 +63,7 @@ class Deps:
     now: Callable[[], datetime]
 
 
-class _StepFailed(Exception):
+class StepFailed(Exception):
     def __init__(self, status: ProcessingStatus, step: PipelineStep, error_category: str):
         self.status, self.step, self.error_category = status, step, error_category
 
@@ -77,7 +78,7 @@ def _status_for(exc: Exception) -> ProcessingStatus:
     raise exc
 
 
-def _with_model_retries[T](call: Callable[[], T]) -> T:
+def with_model_retries[T](call: Callable[[], T]) -> T:
     """Retry temporary model failures; invalid output is retried inside each agent instead."""
     for attempt in range(MODEL_RETRIES + 1):
         try:
@@ -88,19 +89,34 @@ def _with_model_retries[T](call: Callable[[], T]) -> T:
     raise AssertionError("unreachable")
 
 
-class _Run:
-    """One filing: tracks the claim number and writes one event-log line per step."""
+class TaskRun:
+    """One task run: tracks the claim number and writes one event-log line per step.
 
-    def __init__(self, deps: Deps):
+    `claim_id` is preset for an existing claim. Only a number this run reserved itself is ever
+    released on failure, so a failed update can never delete a customer's claim.
+    """
+
+    def __init__(
+        self, deps: Deps, task: MenuTask = MenuTask.FILE_CLAIM, claim_id: str | None = None
+    ):
         self.deps = deps
         self.filed_at = deps.now()
-        self.claim_id: str | None = None
+        self.claim_id = claim_id
+        self.task = task
+        self.reserved = False
+
+    def reserve(self) -> str:
+        if self.claim_id is None:
+            self.claim_id = self.deps.store.reserve_claim_id(self.filed_at.year)
+            self.reserved = True
+        return self.claim_id
 
     def log(self, step: PipelineStep, outcome: ProcessingStatus, started: float, error=None):
         self.deps.events.append(
             EventLogEntry(
                 ts=self.deps.now(),
                 claim_id=self.claim_id,
+                task=self.task,
                 step=step,
                 outcome=outcome,
                 duration_ms=round((time.perf_counter() - started) * 1000),
@@ -115,7 +131,7 @@ class _Run:
         except Exception as exc:
             status = _status_for(exc)
             self.log(step, status, started, type(exc).__name__)
-            raise _StepFailed(status, step, type(exc).__name__) from exc
+            raise StepFailed(status, step, type(exc).__name__) from exc
         self.log(step, ProcessingStatus.COMPLETED, started)
         return result
 
@@ -124,7 +140,7 @@ class _Run:
         started = time.perf_counter()
         follow_up = add_business_days(self.filed_at.date(), PRIVACY_REVIEW_DAYS)
         try:
-            self.claim_id = self.claim_id or self.deps.store.reserve_claim_id(self.filed_at.year)
+            self.reserve()
             self.deps.store.save(
                 ClaimRecord(
                     claim_id=self.claim_id,
@@ -136,9 +152,9 @@ class _Run:
                     history=[HistoryEntry(at=self.filed_at, event="PRIVACY_REVIEW_OPENED")],
                 )
             )
-            path = self._write_status_report(ProcessingStatus.MANUAL_REVIEW_REQUIRED, step, None)
+            path = self.write_status_report(ProcessingStatus.MANUAL_REVIEW_REQUIRED, step, None)
         except OSError as exc:
-            return self.fail(_StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
+            return self.fail(StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
         self.log(step, ProcessingStatus.MANUAL_REVIEW_REQUIRED, started)
         return TaskResult(
             processing_status=ProcessingStatus.MANUAL_REVIEW_REQUIRED,
@@ -151,50 +167,55 @@ class _Run:
             report_path=str(path),
         )
 
-    def fail(self, failure: _StepFailed) -> TaskResult:
+    def fail(self, failure: StepFailed) -> TaskResult:
         """No claim record survives a failure; a status-only report records what happened."""
-        if self.claim_id:
+        if self.reserved:
             self.deps.store.release(self.claim_id)
-            self.claim_id = None
+            self.claim_id, self.reserved = None, False
         try:
             path = str(
-                self._write_status_report(failure.status, failure.step, failure.error_category)
+                self.write_status_report(failure.status, failure.step, failure.error_category)
             )
         except OSError:
             path = None
         return TaskResult(
             processing_status=failure.status,
-            claim_id=None,
+            claim_id=self.claim_id,
             customer_message=FAILURE_MESSAGES[failure.status],
             report_path=path,
         )
 
-    def _write_status_report(self, status, step, error_category) -> Path:
+    def write_status_report(self, status, step, error_category) -> Path:
         report = render_status_only_report(
-            self.claim_id, self.filed_at, status, failed_step=step, error_category=error_category
+            self.claim_id,
+            self.filed_at,
+            status,
+            failed_step=step,
+            error_category=error_category,
+            task=TASK_WORDING[self.task],
         )
         return self.deps.reports.write(report, self.claim_id, self.filed_at)
 
 
-def _is_private(*texts: str) -> bool:
+def is_private(*texts: str) -> bool:
     return not any(find_pii(text) for text in texts)
 
 
-def _ignore_progress(step: int, label: str) -> None:
+def ignore_progress(step: int, label: str) -> None:
     pass
 
 
 def file_claim(
     raw_text: str,
     deps: Deps,
-    on_progress: Callable[[int, str], None] = _ignore_progress,
+    on_progress: Callable[[int, str], None] = ignore_progress,
 ) -> TaskResult:
-    run = _Run(deps)
+    run = TaskRun(deps)
     agents = deps.agents
     try:
         submission = run.step(
             PipelineStep.INTAKE,
-            lambda: _with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
+            lambda: with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
         )
         on_progress(1, PROGRESS_LABELS[0])
         if submission.requires_manual_review:
@@ -202,21 +223,21 @@ def file_claim(
 
         facts: ClaimAssessment = run.step(
             PipelineStep.ASSESSMENT,
-            lambda: _with_model_retries(lambda: assessment.assess(submission, agents)),
+            lambda: with_model_retries(lambda: assessment.assess(submission, agents)),
         )
         on_progress(2, PROGRESS_LABELS[1])
 
         routing: RiskAssessment = run.step(
             PipelineStep.RISK,
-            lambda: _with_model_retries(
+            lambda: with_model_retries(
                 lambda: risk.evaluate(submission, facts, run.filed_at.date(), agents)
             ),
         )
         on_progress(3, PROGRESS_LABELS[2])
 
         def compose_reply() -> tuple[CustomerReply, InternalReport]:
-            run.claim_id = run.claim_id or deps.store.reserve_claim_id(run.filed_at.year)
-            return _with_model_retries(
+            run.reserve()
+            return with_model_retries(
                 lambda: summary.compose(
                     run.claim_id, run.filed_at, submission, facts, routing, agents
                 )
@@ -236,7 +257,7 @@ def file_claim(
         )
         private = run.step(
             PipelineStep.PRIVACY_GUARD,
-            lambda: _is_private(reply.text, report.markdown, record.model_dump_json()),
+            lambda: is_private(reply.text, report.markdown, record.model_dump_json()),
         )
         if not private:
             return run.privacy_review(PipelineStep.PRIVACY_GUARD)
@@ -246,7 +267,7 @@ def file_claim(
             return deps.reports.write(report, run.claim_id, run.filed_at)
 
         path = run.step(PipelineStep.SAVE, save)
-    except _StepFailed as failure:
+    except StepFailed as failure:
         return run.fail(failure)
 
     return TaskResult(

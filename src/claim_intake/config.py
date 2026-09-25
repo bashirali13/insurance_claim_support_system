@@ -25,7 +25,9 @@ class Settings:
 def load_settings(environ: Mapping[str, str]) -> Settings:
     key = environ.get("OPENROUTER_API_KEY", "").strip()
     model_name = environ.get("MODEL_NAME", "").strip()
-    if not key or not model_name:
+    # OpenRouter model names are "<provider>/<model>"; anything else fails later with a traceback.
+    provider, _, model = model_name.partition("/")
+    if not key or not provider or not model:
         raise ConfigError(SETUP_MESSAGE)
     return Settings(openrouter_api_key=key, model_name=model_name)
 

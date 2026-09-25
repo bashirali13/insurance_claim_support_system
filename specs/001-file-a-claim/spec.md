@@ -252,7 +252,8 @@ answers. Check the terminal output, the saved claim record, and the saved report
 1. **AC-5.1**: **Given** the app is started with valid configuration, **When** the menu appears,
    **Then** it shows the Northstar Auto Insurance header, the privacy notice, and options 1–5 as
    in `docs/user-experience.md` §3. Options 2–4 reply that they are "coming soon" and return to
-   the menu. **And given** the customer types anything other than 1–5, **Then** they see "Please
+   the menu. *(Superseded by `specs/002-existing-claim-support` FR-220: options 2–4 are live from
+   phase 002.)* **And given** the customer types anything other than 1–5, **Then** they see "Please
    choose a number from 1 to 5." and the menu is shown again.
 2. **AC-5.2**: **Given** option 1 is chosen, **When** the customer types several lines and then an
    empty line, **Then** all lines are captured as one narrative.
@@ -271,6 +272,9 @@ answers. Check the terminal output, the saved claim record, and the saved report
    **Then** the customer is told the limit and asked to shorten it, and no processing takes place.
 7. **AC-5.7**: **Given** required configuration (service key or model name) is missing, **When**
    the app starts, **Then** it shows a clear setup message and exits before showing the menu.
+   **And given** a model name without a provider prefix (e.g., `flash` instead of
+   `deepseek/deepseek-v4-flash-0731`), **Then** the same setup message is shown and the app exits
+   the same way, with no error trace. *(Added during phase 002 after a smoke test crashed.)*
 8. **AC-5.8**: **Given** a submission marked for manual privacy review (AC-1.8 or AC-4.6), **When**
    processing stops, **Then** a claim number is issued, a minimal claim record is saved (status
    `ESCALATED`, team Privacy Review, follow-up date; no narrative, facts, or incident type), a

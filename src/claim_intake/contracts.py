@@ -174,6 +174,7 @@ class Team(StrEnum):
     CUSTOMER_RELATIONS = "CUSTOMER_RELATIONS"
     SPECIAL_REVIEW = "SPECIAL_REVIEW"
     PRIVACY_REVIEW = "PRIVACY_REVIEW"
+    POLICY_SERVICES = "POLICY_SERVICES"
 
 
 class RiskLlmOutput(Contract):
@@ -239,12 +240,32 @@ class PipelineStep(StrEnum):
 class ClaimStatus(StrEnum):
     SUBMITTED = "SUBMITTED"
     AWAITING_INFORMATION = "AWAITING_INFORMATION"
+    UNDER_REVIEW = "UNDER_REVIEW"  # set by staff (sample data in this phase)
     ESCALATED = "ESCALATED"
+    CLOSED = "CLOSED"  # set by staff (sample data in this phase)
 
 
 class HistoryEntry(Contract):
     at: datetime
-    event: Literal["FILED", "PRIVACY_REVIEW_OPENED"]
+    event: Literal["FILED", "PRIVACY_REVIEW_OPENED", "DETAILS_UPDATED", "HELP_REQUESTED"]
+    detail: str | None = None  # changed field names or a help reference; never values
+
+
+SensitiveField = Literal[
+    "incident_type",
+    "um_uim_subtype",
+    "customer_side_injured",
+    "others_injured",
+    "other_party_involved",
+]
+
+
+class PendingChange(Contract):
+    """A sensitive correction held until an adjuster confirms it (FR-209)."""
+
+    field: SensitiveField
+    requested_value: str
+    requested_at: datetime
 
 
 class ClaimRecord(Contract):
@@ -257,6 +278,7 @@ class ClaimRecord(Contract):
     teams: list[Team]
     follow_up_date: date
     history: list[HistoryEntry] = Field(min_length=1)
+    pending_changes: list[PendingChange] = []
 
 
 class TaskResult(Contract):
@@ -268,12 +290,95 @@ class TaskResult(Contract):
     report_path: str | None
 
 
+class MenuTask(StrEnum):
+    FILE_CLAIM = "FILE_CLAIM"
+    UPDATE_DETAILS = "UPDATE_DETAILS"
+    GET_HELP = "GET_HELP"
+
+
 class EventLogEntry(Contract):
-    """One text-free line in logs/events.log (FR-033)."""
+    """One text-free line in logs/events.log (FR-033, FR-218)."""
 
     ts: datetime
     claim_id: str | None
+    task: MenuTask
     step: PipelineStep
     outcome: ProcessingStatus
     duration_ms: int
     error_category: str | None
+
+
+# --- Updates to an existing claim (specs/002 US7) ----------------------------------------------
+
+
+class UpdateLlmOutput(Contract):
+    """What the update-mode model may return: the full facts after the customer's update."""
+
+    updated: AssessmentLlmOutput
+    contact_change_requested: bool
+
+
+class FieldChange(Contract):
+    field: str
+    old: str | None
+    new: str | None
+
+
+class FactChanges(Contract):
+    """What an update changed, decided by code (rules.diff_facts), never by the model."""
+
+    added: list[FieldChange]
+    corrected: list[FieldChange]
+    sensitive: list[FieldChange]
+    applied: AssessmentLlmOutput
+
+    @property
+    def is_empty(self) -> bool:
+        return not (self.added or self.corrected or self.sensitive)
+
+
+# --- Get help (specs/002 US8) ------------------------------------------------------------------
+
+
+class RequestCategory(StrEnum):
+    COMPLAINT = "COMPLAINT"
+    SERVICE_DELAY = "SERVICE_DELAY"
+    CLAIM_QUESTION = "CLAIM_QUESTION"
+    SPEAK_TO_ADJUSTER = "SPEAK_TO_ADJUSTER"
+    CONTACT_CHANGE = "CONTACT_CHANGE"
+    FILE_A_CLAIM = "FILE_A_CLAIM"
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"
+
+
+class HelpTriageLlmOutput(Contract):
+    """What the help-triage model may judge. Teams and dates are decided by rules."""
+
+    sentiment: Sentiment
+    categories: list[RequestCategory] = Field(min_length=1, max_length=3)
+    legal_representation_mentioned: bool
+    possible_prompt_injection: bool
+    rationale: str = Field(min_length=1, max_length=300)
+
+
+class HelpReplyLlmOutput(Contract):
+    """The only help-reply text the model writes; checked before use."""
+
+    opening_line: str
+
+
+class TeamPromise(Contract):
+    team: Team
+    business_days: int
+    follow_up_date: date
+
+
+class HelpRecord(Contract):
+    """Saved as data/help/<help_id>.json. Never contains the request text or personal values."""
+
+    help_id: str = Field(pattern=r"^HELP-\d{4}-\d{4}$")
+    claim_id: str | None
+    filed_at: datetime
+    sentiment: Sentiment | None  # None only for privacy review (AC-8.12)
+    categories: list[RequestCategory]  # empty only for privacy review
+    routed: list[TeamPromise] = Field(min_length=1)
+    history: list[HistoryEntry] = Field(min_length=1)

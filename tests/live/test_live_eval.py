@@ -14,12 +14,14 @@ from dotenv import load_dotenv
 from pydantic_ai import models
 
 from claim_intake.agents import create_agents
-from claim_intake.agents.assessment import assess
+from claim_intake.agents.assessment import assess, update
 from claim_intake.agents.intake import scrub
+from claim_intake.agents.risk import triage
 from claim_intake.config import build_model, load_settings
-from claim_intake.contracts import ProcessingStatus, RawSubmission
+from claim_intake.contracts import ClaimRecord, ProcessingStatus, RawSubmission
 from claim_intake.orchestration import Deps, file_claim
-from claim_intake.storage import ClaimStore, EventLog, ReportWriter
+from claim_intake.rules import diff_facts
+from claim_intake.storage import SAMPLES_DIR, ClaimStore, EventLog, ReportWriter
 
 pytestmark = pytest.mark.live
 
@@ -88,3 +90,43 @@ def test_all_four_agents_return_valid_structured_output_end_to_end(agents, tmp_p
         ProcessingStatus.COMPLETED,
         ProcessingStatus.MANUAL_REVIEW_REQUIRED,
     }
+
+
+# --- Phase 002: update mode and help triage (SC-203, SC-204) ---------------------------------
+
+
+def test_sc_203_update_mode_reflects_the_stated_change_at_least_90_percent(agents):
+    saved = ClaimRecord.model_validate_json(
+        (SAMPLES_DIR / "CLM-2026-0005.json").read_text(encoding="utf-8")
+    ).assessment
+    cases = load_cases("update_cases.json")
+    wrong = []
+    for case in cases:
+        submission = scrub(RawSubmission(text=case["text"]), agents)
+        proposed = update(submission, saved, agents)
+        changes = diff_facts(saved, proposed.updated)
+        changed = {c.field for c in [*changes.added, *changes.corrected, *changes.sensitive]}
+        if changed != set(case["changed"]) or proposed.contact_change_requested != case["contact"]:
+            wrong.append((case["id"], sorted(changed), proposed.contact_change_requested))
+
+    accuracy = 1 - len(wrong) / len(cases)
+    print(f"\nUpdate-mode accuracy: {accuracy:.0%} ({len(cases) - len(wrong)}/{len(cases)})")
+    for miss in wrong:
+        print(f"  {miss}")
+    assert accuracy >= 0.9
+
+
+def test_sc_204_help_triage_assigns_expected_category_at_least_90_percent(agents):
+    cases = load_cases("help_cases.json")
+    wrong = []
+    for case in cases:
+        submission = scrub(RawSubmission(text=case["text"]), agents)
+        categories = [str(c) for c in triage(submission, agents).categories]
+        if case["expected"] not in categories:
+            wrong.append((case["id"], case["expected"], categories))
+
+    accuracy = 1 - len(wrong) / len(cases)
+    print(f"\nHelp triage accuracy: {accuracy:.0%} ({len(cases) - len(wrong)}/{len(cases)})")
+    for miss in wrong:
+        print(f"  {miss}")
+    assert accuracy >= 0.9

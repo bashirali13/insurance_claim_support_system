@@ -1,0 +1,42 @@
+{
+  "claim_id": "CLM-2026-0002",
+  "status": "AWAITING_INFORMATION",
+  "filed_at": "2026-09-18T20:10:00",
+  "assessment": {
+    "incident_type": "THEFT",
+    "um_uim_subtype": null,
+    "incident_date": "Thursday night around 9pm",
+    "location": "Walmart parking lot on Grand Blvd",
+    "damage_areas": [],
+    "customer_side_injured": "NO",
+    "others_injured": "NO",
+    "other_party_involved": "NO",
+    "other_property_damaged": "NO",
+    "vehicle_drivable": "UNKNOWN",
+    "police_report_mentioned": "NO",
+    "key_facts": [
+      "Vehicle stolen from a store parking lot",
+      "Police not yet contacted"
+    ],
+    "contradictions": [],
+    "injury_present": "NO",
+    "missing_information": [
+      "POLICE_REPORT"
+    ],
+    "coverage_lines": [
+      "COMPREHENSIVE"
+    ]
+  },
+  "teams": [
+    "CLAIMS_ADJUSTER"
+  ],
+  "follow_up_date": "2026-09-22",
+  "history": [
+    {
+      "at": "2026-09-18T20:10:00",
+      "event": "FILED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}
