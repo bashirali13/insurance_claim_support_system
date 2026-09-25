@@ -1,0 +1,41 @@
+{
+  "claim_id": "CLM-2026-0004",
+  "status": "CLOSED",
+  "filed_at": "2026-09-15T08:15:00",
+  "assessment": {
+    "incident_type": "GLASS",
+    "um_uim_subtype": null,
+    "incident_date": "Monday morning",
+    "location": "I-80 near exit 42",
+    "damage_areas": [
+      "windshield"
+    ],
+    "customer_side_injured": "NO",
+    "others_injured": "NO",
+    "other_party_involved": "NO",
+    "other_property_damaged": "NO",
+    "vehicle_drivable": "YES",
+    "police_report_mentioned": "NO",
+    "key_facts": [
+      "Rock from a truck cracked the windshield"
+    ],
+    "contradictions": [],
+    "injury_present": "NO",
+    "missing_information": [],
+    "coverage_lines": [
+      "COMPREHENSIVE"
+    ]
+  },
+  "teams": [
+    "CLAIMS_ADJUSTER"
+  ],
+  "follow_up_date": "2026-09-17",
+  "history": [
+    {
+      "at": "2026-09-15T08:15:00",
+      "event": "FILED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}

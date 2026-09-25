@@ -1,0 +1,18 @@
+{
+  "claim_id": "CLM-2026-0006",
+  "status": "ESCALATED",
+  "filed_at": "2026-09-22T11:00:00",
+  "assessment": null,
+  "teams": [
+    "PRIVACY_REVIEW"
+  ],
+  "follow_up_date": "2026-09-25",
+  "history": [
+    {
+      "at": "2026-09-22T11:00:00",
+      "event": "PRIVACY_REVIEW_OPENED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}

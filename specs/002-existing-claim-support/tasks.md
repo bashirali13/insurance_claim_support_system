@@ -95,7 +95,7 @@ is involved.
   - `ClaimRecord.pending_changes: list[PendingChange] = []`
 
   In `src/claim_intake/rules.py`: `normalize_claim_number(text) -> str | None`.
-- [ ] T008 [US6] Create `data/samples/CLM-2026-000{1..6}.json` per contracts/files.md (all
+- [X] T008 [US6] Create `data/samples/CLM-2026-000{1..6}.json` per contracts/files.md (all
   fictional, sanitized, filed Sep 14–23, 2026; `0005` has the police report missing and time
   "yesterday around 6pm"), and add `storage.load_samples(root) -> list[str]`.
 - [ ] T009 [US6] In `src/claim_intake/reporting.py`:

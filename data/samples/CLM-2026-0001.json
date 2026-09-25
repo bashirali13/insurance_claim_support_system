@@ -1,0 +1,44 @@
+{
+  "claim_id": "CLM-2026-0001",
+  "status": "UNDER_REVIEW",
+  "filed_at": "2026-09-14T09:30:00",
+  "assessment": {
+    "incident_type": "COLLISION",
+    "um_uim_subtype": null,
+    "incident_date": "Sunday around 5:30pm",
+    "location": "Elm Ave and Pine St",
+    "damage_areas": [
+      "rear bumper",
+      "trunk"
+    ],
+    "customer_side_injured": "NO",
+    "others_injured": "NO",
+    "other_party_involved": "YES",
+    "other_property_damaged": "NO",
+    "vehicle_drivable": "YES",
+    "police_report_mentioned": "NO",
+    "key_facts": [
+      "Rear-ended while stopped at a light",
+      "Insurance information exchanged",
+      "No injuries"
+    ],
+    "contradictions": [],
+    "injury_present": "NO",
+    "missing_information": [],
+    "coverage_lines": [
+      "COLLISION"
+    ]
+  },
+  "teams": [
+    "CLAIMS_ADJUSTER"
+  ],
+  "follow_up_date": "2026-09-16",
+  "history": [
+    {
+      "at": "2026-09-14T09:30:00",
+      "event": "FILED",
+      "detail": null
+    }
+  ],
+  "pending_changes": []
+}

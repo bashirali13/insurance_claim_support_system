@@ -8,6 +8,9 @@ from pathlib import Path
 from claim_intake.contracts import ClaimRecord, EventLogEntry, InternalReport
 from claim_intake.pii import find_pii
 
+# Committed, fictional sample claims (FR-204). Copied into data/claims/ only on request.
+SAMPLES_DIR = Path(__file__).resolve().parents[2] / "data" / "samples"
+
 
 class ClaimStore:
     """Sanitized claim records in data/claims/<claim_id>.json."""
@@ -73,3 +76,15 @@ class EventLog:
             raise ValueError("event log line failed the privacy check")
         with self.path.open("a", encoding="utf-8") as log:
             log.write(line + "\n")
+
+
+def load_samples(root: Path) -> list[str]:
+    """Copy sample claims that aren't already present; never overwrite. Returns the IDs copied."""
+    claims = ClaimStore(root).dir
+    copied = []
+    for sample in sorted(SAMPLES_DIR.glob("CLM-*.json")):
+        target = claims / sample.name
+        if not target.exists():
+            target.write_text(sample.read_text(encoding="utf-8"), encoding="utf-8")
+            copied.append(sample.stem)
+    return copied
