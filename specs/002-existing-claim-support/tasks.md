@@ -259,7 +259,7 @@ routing, the help record, the reply, and the claim history.
   `ClaimStore` (phase 001 storage tests stay green) and add `HelpStore` (`data/help/`, `HELP`).
 - [X] T032 [US8] In `src/claim_intake/reporting.py`: `render_help_reply` and
   `render_help_report`.
-- [ ] T033 [US8] In `src/claim_intake/existing_claims.py`: `get_help(claim_id, raw_text, deps,
+- [X] T033 [US8] In `src/claim_intake/existing_claims.py`: `get_help(claim_id, raw_text, deps,
   on_progress)` (routed, redirect-only, privacy, failure, and claim-linking paths; `_Run` with
   task `GET_HELP`).
 - [ ] T034 [US8] In `src/claim_intake/cli.py`: option 4 with the optional claim-number prompt.
