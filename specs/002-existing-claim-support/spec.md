@@ -28,6 +28,7 @@ acceptance criteria **AC-6.x–AC-8.x**. IDs stay unique across the project.
 - Q: How do the sample claims get into the app, and is runtime data kept out of git? → A: Samples are committed in `data/samples/`; `uv run claim-support --load-samples` copies them into `data/claims/` (never overwriting) and then starts the app; `data/claims/` and `data/help/` are gitignored.
 - Q: In Get help, what happens with an unknown or malformed claim number? → A: Show the same hint as option 2 and ask again; pressing Enter continues without a claim number; only a verified claim number is linked to the request.
 - Q: After an update re-runs routing, are the claim's teams replaced or accumulated? → A: Replaced. Teams and the follow-up date become the latest result (a deliberate trade-off: a routine update can drop a previously routed team, while an `ESCALATED` status is kept by FR-208).
+- Plan-time consistency fix: FR-218 no longer lists `CHECK_STATUS`, because AC-6.8 forbids status checks from changing any file, including the event log.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -306,8 +307,9 @@ number, then check the categories, teams, dates, reference number, saved help re
 - **FR-217**: Every AI step in US7 and US8 MUST reuse phase 001's safeguards: tagged narrative,
   narrow model output, rule-owned routing, output validation for customer-facing text, final
   privacy guard over the reply, report, and saved records, retries, and safe failure messages.
-- **FR-218**: The event log MUST record a `task` field (`FILE_CLAIM`, `CHECK_STATUS`,
-  `UPDATE_DETAILS`, `GET_HELP`) on every line, in addition to phase 001's fields.
+- **FR-218**: The event log MUST record a `task` field (`FILE_CLAIM`, `UPDATE_DETAILS`,
+  `GET_HELP`) on every line, in addition to phase 001's fields. Status checks write no event-log
+  line (AC-6.8). *(This extends phase 001 AC-5.13's allowed field list by `task`.)*
 - **FR-219**: Re-prompted input (empty, too long, or a malformed claim number) is not a failure. It
   writes no report and no event-log line. *(This clarifies phase 001 FR-030, which listed
   `REJECTED_INPUT` among report-writing failures.)*
