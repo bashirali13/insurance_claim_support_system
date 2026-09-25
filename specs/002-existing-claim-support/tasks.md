@@ -123,7 +123,7 @@ check the reply, the saved record, and the history.
 
 ### Tests for User Story 7 (write first; they must fail)
 
-- [ ] T012 [P] [US7] Write `tests/unit/test_update_rules.py` (pure `rules.diff_facts`,
+- [X] T012 [P] [US7] Write `tests/unit/test_update_rules.py` (pure `rules.diff_facts`,
   `status_after_update`, and follow-up combination):
   - `test_ac_7_1_police_report_unknown_to_yes_is_added`
   - `test_ac_7_1_new_damage_items_are_added_and_list_never_shrinks`
@@ -138,17 +138,17 @@ check the reply, the saved record, and the history.
   - `test_ac_7_5_status_after_update_priority_*` (parametrized: ESCALATED stays; HIGH →
     ESCALATED; UNDER_REVIEW stays; missing → AWAITING_INFORMATION; else SUBMITTED)
   - `test_ac_7_5_claim_follow_up_date_is_earliest_promise`
-- [ ] T013 [P] [US7] Append to `tests/unit/test_assessment.py`:
+- [X] T013 [P] [US7] Append to `tests/unit/test_assessment.py`:
   - `test_ac_7_11_update_prompt_tags_text_and_sends_saved_facts_outside_tags`
   - `test_ac_7_1_update_returns_model_facts_and_contact_flag`
-- [ ] T014 [P] [US7] Append to `tests/unit/test_reporting.py`:
+- [X] T014 [P] [US7] Append to `tests/unit/test_reporting.py`:
   - `test_ac_7_1_update_reply_lists_added_items_in_customer_wording`
   - `test_ac_7_2_update_reply_shows_old_to_new_for_corrections`
   - `test_ac_7_3_update_reply_contact_change_line_with_three_day_date`
   - `test_ac_7_4_update_reply_pending_line_names_field_and_one_day_date`
   - `test_ac_7_8_update_report_sections_and_notice`
   - `test_ac_7_9_status_only_report_names_update_task`
-- [ ] T015 [P] [US7] Write `tests/integration/test_update_claim.py` (samples loaded into
+- [X] T015 [P] [US7] Write `tests/integration/test_update_claim.py` (samples loaded into
   `workdirs`, `fixed_now`):
   - `test_ac_7_1_police_report_added_updates_record_missing_list_and_history` (the history
     `detail` has field names only)
@@ -163,7 +163,7 @@ check the reply, the saved record, and the history.
   - `test_ac_7_9_model_failure_leaves_claim_unchanged_with_safe_message`
   - `test_ac_7_10_residual_pii_opens_privacy_review_without_applying_update` (teams = existing +
     `PRIVACY_REVIEW`, follow-up +3 business days, facts unchanged)
-- [ ] T016 [P] [US7] In `tests/integration/test_cli.py`:
+- [X] T016 [P] [US7] In `tests/integration/test_cli.py`:
   - add `test_ac_7_7_closed_claim_update_is_refused_without_asking_for_text`
   - add `test_ac_7_12_privacy_review_claim_update_is_refused_*` (future date → "by <date>";
     past date → "soon")

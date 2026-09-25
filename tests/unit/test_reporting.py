@@ -13,8 +13,21 @@ from claim_intake.contracts import (
     Team,
     TriState,
 )
-from claim_intake.reporting import render_reply, render_report, render_status_only_report
-from tests.builders import claim_assessment, risk_assessment, sanitized, summary_output
+from claim_intake.reporting import (
+    render_reply,
+    render_report,
+    render_status_only_report,
+    render_update_reply,
+    render_update_report,
+)
+from claim_intake.rules import diff_facts
+from tests.builders import (
+    assessment_output,
+    claim_assessment,
+    risk_assessment,
+    sanitized,
+    summary_output,
+)
 
 CLAIM_ID = "CLM-2026-0007"
 FILED_AT = datetime(2026, 9, 24, 10, 15)
@@ -162,3 +175,115 @@ def test_ac_5_8_status_only_report_contains_no_narrative_or_facts():
     assert "## Facts" not in report
     assert REPORT_SECTIONS[-1] in report
     assert MissingItem.POLICE_REPORT not in report
+
+
+# --- US7: update reply and report ---------------------------------------------------------------
+
+UPDATE_SAVED = assessment_output(
+    incident_date="yesterday around 6pm",
+    customer_side_injured=TriState.YES,
+    police_report_mentioned=TriState.UNKNOWN,
+)
+FRIDAY, TUESDAY = date(2026, 9, 25), date(2026, 9, 29)
+
+
+def update_text(changes, *, contact=False, missing=(), teams=(Team.CLAIMS_ADJUSTER,)) -> str:
+    return render_update_reply(
+        CLAIM_ID,
+        changes,
+        contact_change_requested=contact,
+        teams=list(teams),
+        routing_date=FRIDAY,
+        pending_date=FRIDAY,
+        contact_date=TUESDAY,
+        missing=list(missing),
+    ).text
+
+
+def test_ac_7_1_update_reply_lists_added_items_in_customer_wording():
+    changes = diff_facts(
+        UPDATE_SAVED, UPDATE_SAVED.model_copy(update={"police_report_mentioned": TriState.YES})
+    )
+
+    text = update_text(changes)
+
+    assert text.startswith(f"Thanks, your claim {CLAIM_ID} is updated.")
+    assert "  • Added: police report" in text
+    assert "  • A claims adjuster will contact you by Friday, Sep 25." in text
+
+
+def test_ac_7_2_update_reply_shows_old_to_new_for_corrections():
+    changes = diff_facts(
+        UPDATE_SAVED, UPDATE_SAVED.model_copy(update={"incident_date": "around 7pm"})
+    )
+
+    assert "  • Corrected: when it happened (yesterday around 6pm → around 7pm)" in update_text(
+        changes
+    )
+
+
+def test_ac_7_3_update_reply_contact_change_line_with_three_day_date():
+    text = update_text(diff_facts(UPDATE_SAVED, UPDATE_SAVED), contact=True)
+
+    assert (
+        "  • Our Policy Services team will confirm your new contact details with you by "
+        "Tuesday, Sep 29.\n    We didn't store them here."
+    ) in text
+
+
+def test_ac_7_4_update_reply_pending_line_names_field_and_one_day_date():
+    changes = diff_facts(
+        UPDATE_SAVED, UPDATE_SAVED.model_copy(update={"customer_side_injured": TriState.NO})
+    )
+
+    assert (
+        "  • An adjuster will confirm this change with you by Friday, Sep 25:\n"
+        "    injuries to you or your passengers"
+    ) in update_text(changes)
+
+
+def test_ac_7_8_update_report_sections_and_notice():
+    changes = diff_facts(
+        UPDATE_SAVED, UPDATE_SAVED.model_copy(update={"police_report_mentioned": TriState.YES})
+    )
+
+    report = render_update_report(
+        CLAIM_ID,
+        FILED_AT,
+        changes,
+        contact_change_requested=False,
+        submission=sanitized("The police report number is 26-44817."),
+        assessment=claim_assessment(),
+        risk=risk_assessment(),
+        teams=[Team.CLAIMS_ADJUSTER],
+        follow_up_date=FRIDAY,
+    ).markdown
+
+    sections = [
+        "- **Task:** Add or correct details",
+        "## Added",
+        "## Corrected",
+        "## Pending Adjuster Confirmation",
+        "## Contact Change",
+        "## Missing Information",
+        "## Sentiment and Risk",
+        "## Routing and Follow-up",
+        "## Privacy",
+        REPORT_SECTIONS[-1],
+    ]
+    positions = [report.index(s) for s in sections]
+    assert positions == sorted(positions)
+    assert "police report" in report.split("## Added")[1].split("##")[0]
+
+
+def test_ac_7_9_status_only_report_names_update_task():
+    report = render_status_only_report(
+        CLAIM_ID,
+        FILED_AT,
+        ProcessingStatus.FAILED_MODEL_ERROR,
+        failed_step=PipelineStep.ASSESSMENT,
+        error_category="ModelHTTPError",
+        task="Add or correct details",
+    ).markdown
+
+    assert "- **Task:** Add or correct details" in report

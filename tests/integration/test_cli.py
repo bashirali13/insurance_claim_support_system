@@ -1,5 +1,7 @@
 """US5-US8: the terminal menu and flows (contracts/cli.md), with scripted keyboard input."""
 
+from datetime import date
+
 import pytest
 
 from claim_intake import cli
@@ -81,9 +83,8 @@ def test_ac_5_1_menu_shows_header_notice_and_five_options(keyboard, capsys):
         assert option in out
 
 
-@pytest.mark.parametrize("choice", ["3", "4"])
-def test_ac_5_1_options_3_and_4_say_coming_soon(choice, keyboard, capsys):
-    keyboard(choice, "5")
+def test_ac_5_1_option_4_says_coming_soon(keyboard, capsys):
+    keyboard("4", "5")
 
     _, out = run_app(capsys)
 
@@ -210,3 +211,65 @@ def test_ac_6_9_load_samples_flag_reports_count_then_shows_menu(
     out = capsys.readouterr().out
     assert code == 0
     assert out.index("Loaded 6 sample claims.") < out.index(HEADER)
+
+
+# --- US7: option 3 ------------------------------------------------------------------------
+
+
+def test_ac_7_7_closed_claim_update_is_refused_without_asking_for_text(
+    keyboard, sample_deps, capsys
+):
+    keyboard("3", "CLM-2026-0004", "5")  # no narrative lines supplied: none may be requested
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert (
+        "This claim is closed. If you need help with it, choose option 4 "
+        "(Get help with my claim)." in out
+    )
+    assert "What would you like to add or correct?" not in out
+
+
+@pytest.mark.parametrize(
+    ("follow_up", "expected"),
+    [
+        ("2026-09-25", "They'll contact you by Friday, Sep 25"),
+        ("2026-09-01", "They'll contact you soon"),
+    ],
+)
+def test_ac_7_12_privacy_review_claim_update_is_refused(
+    follow_up, expected, keyboard, sample_deps, capsys
+):
+    record = sample_deps.store.load("CLM-2026-0006")
+    sample_deps.store.save(
+        record.model_copy(update={"follow_up_date": date.fromisoformat(follow_up)})
+    )
+    keyboard("3", "CLM-2026-0006", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert "This claim is with a specialist for a privacy review." in out
+    assert f"{expected}, and you can share any updates with them then." in out
+    assert "What would you like to add or correct?" not in out
+
+
+def test_ac_7_1_option_3_flow_prints_update_reply(keyboard, sample_deps, monkeypatch, capsys):
+    sent = []
+
+    def fake_update_claim(claim_id, text, deps, on_progress=None):
+        sent.append((claim_id, text))
+        return TaskResult(
+            processing_status=ProcessingStatus.COMPLETED,
+            claim_id=claim_id,
+            customer_message="(update reply)",
+            report_path=None,
+        )
+
+    monkeypatch.setattr(cli, "update_claim", fake_update_claim)
+    keyboard("3", "CLM-2026-0005", "The police report number is 26-44817.", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert sent == [("CLM-2026-0005", "The police report number is 26-44817.")]
+    assert "What would you like to add or correct?" in out
+    assert "(update reply)" in out
