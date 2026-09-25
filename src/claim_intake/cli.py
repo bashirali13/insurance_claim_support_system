@@ -52,13 +52,13 @@ GOODBYE = "Thank you for contacting Northstar Auto Insurance. Goodbye."
 UNEXPECTED_MESSAGE = "Something went wrong on our side. Please try again later."
 INTERRUPTED_MESSAGE = "Stopped. Nothing further was sent."
 INTERRUPTED_EXIT_CODE = 130  # conventional exit code for an interrupted program
-CLAIM_NUMBER_PROMPT = "Enter your claim number (e.g. CLM-2026-0007): "
+CLAIM_NUMBER_PROMPT = "Enter your claim number (format CLM-YYYY-NNNN): "
 OPTIONAL_CLAIM_NUMBER_PROMPT = "Enter your claim number (or press Enter if you don't have one): "
 SKIP_HINT = "Press Enter to continue without one."
 HELP_PROMPT = """
 How can we help?
 Press Enter on an empty line when you're done."""
-BAD_CLAIM_NUMBER = "Claim numbers look like CLM-2026-0007. Please try again."
+BAD_CLAIM_NUMBER = "Claim numbers look like CLM-YYYY-NNNN. Please try again."
 UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try again."
 PROGRESS_WIDTH = 42
 
