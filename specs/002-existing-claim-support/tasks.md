@@ -34,7 +34,7 @@ when a test needs them.
 
 ## Phase 2: Foundational (event log `task`, FR-218)
 
-- [ ] T002 Red: in `tests/integration/test_file_claim.py`:
+- [X] T002 Red: in `tests/integration/test_file_claim.py`:
   - update `test_ac_5_13_event_log_lines_have_only_allowed_fields` so the allowed keys include
     `task` (FR-218 extends AC-5.13)
   - add `test_ac_5_13_filing_event_lines_have_task_file_claim`

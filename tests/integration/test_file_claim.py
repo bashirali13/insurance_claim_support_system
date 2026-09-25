@@ -210,8 +210,15 @@ def test_ac_5_13_event_log_has_one_line_per_step(workdirs, fixed_now):
 def test_ac_5_13_event_log_lines_have_only_allowed_fields(workdirs, fixed_now):
     file_claim(NARRATIVE, make_deps(workdirs, fixed_now, happy_model()))
 
+    allowed = {"ts", "claim_id", "task", "step", "outcome", "duration_ms", "error_category"}
     for line in event_lines(workdirs):
-        assert set(line) == {"ts", "claim_id", "step", "outcome", "duration_ms", "error_category"}
+        assert set(line) == allowed  # FR-218 (spec 002) adds `task` to AC-5.13's field list
+
+
+def test_ac_5_13_filing_event_lines_have_task_file_claim(workdirs, fixed_now):
+    file_claim(NARRATIVE, make_deps(workdirs, fixed_now, happy_model()))
+
+    assert {line["task"] for line in event_lines(workdirs)} == {"FILE_CLAIM"}
 
 
 def test_ac_5_13_event_log_contains_no_narrative_words(workdirs, fixed_now):
