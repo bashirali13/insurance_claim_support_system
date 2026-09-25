@@ -48,10 +48,9 @@ def known_personal_values() -> set[str]:
     return values
 
 
-def section(text: str, heading: str) -> str:
-    """The text under a `## heading`, up to the next `## ` heading."""
-    after = text.split(f"## {heading}\n", 1)[1]
-    return after.split("\n## ", 1)[0]
+def staff_report(text: str) -> str:
+    """Everything under `## Staff report`, the last section (the report has its own headings)."""
+    return text.split("## Staff report\n", 1)[1]
 
 
 def test_ac_12_2_readme_relative_links_resolve():
@@ -101,7 +100,7 @@ def test_ac_12_4_samples_have_reply_and_report_sections_and_notice():
         text = sample.read_text(encoding="utf-8")
         assert "## Customer reply\n" in text, sample.name
         assert "## Staff report\n" in text, sample.name
-        assert DECISION_NOTICE in section(text, "Staff report"), sample.name
+        assert DECISION_NOTICE in staff_report(text), sample.name
 
 
 def test_ac_12_4_samples_contain_no_personal_values():

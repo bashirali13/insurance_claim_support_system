@@ -203,12 +203,18 @@ The contact-change history detail is fixed.
 - [X] T022 [US12] Rewrite `README.md` per FR-310: what it does and doesn't do, setup, run
   (including `--load-samples` and `--trace`), the menu options, safety guarantees, testing,
   structure, the SDD/TDD process, and links. Embed a summary Mermaid diagram.
-- [ ] T023 [US12] Capture samples with the real model in a scratch folder (research R6: S01, S10,
+- [X] T023 [US12] Capture samples with the real model in a scratch folder (research R6: S01, S10,
   S22, E04, E07, E08, E10), review them, and commit them to `docs/samples/*.md` with
   `## Customer reply` and `## Staff report` sections. Produce the privacy-review example with a
   scripted run and label it (AC-12.4).
-- [ ] T024 [US12] Run quickstart steps Q-9, Q-10, and Q-12.1 (fresh clone); record the results.
+  *Done 2026-09-25: 7 samples in `docs/samples/` (6 real-model, 1 labeled scripted). E10 has no
+  sample file: an out-of-scope request writes no record or report by design (FR-214), so there's
+  no staff report to pair with its reply.*
+- [X] T024 [US12] Run quickstart steps Q-9, Q-10, and Q-12.1 (fresh clone); record the results.
   Q-12.3 needs the pushed branch, so it runs in T027.
+  *Done 2026-09-25: a fresh clone ran `uv sync`, `--load-samples --trace`, and a status check
+  (exit 0); piped EOF exits 0 (Q-9). Ctrl+C and trace blocks (Q-9, Q-10) are covered by the
+  automated AC-9.x and AC-10.x tests, and the real-model capture run exercised every flow.*
 
 **Checkpoint**: `uv run pytest -k ac_12` green; the quickstart steps pass.
 
@@ -216,7 +222,7 @@ The contact-change history detail is fixed.
 
 ## Phase 7: Polish & Close
 
-- [ ] T025 [P] Update `docs/user-experience.md` §10 (trace built, terminal-only) and `CLAUDE.md`
+- [X] T025 [P] Update `docs/user-experience.md` §10 (trace built, terminal-only) and `CLAUDE.md`
   Commands (`--load-samples`, `--trace`).
 - [ ] T026 Run the final `uv run ruff format .`, `uv run ruff check .`, full `uv run pytest`, and
   the SC-306 AC coverage check.
