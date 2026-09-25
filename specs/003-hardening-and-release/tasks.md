@@ -125,7 +125,7 @@ tested as pure formatting; the CLI prints it only with the flag.
   `TaskResult.trace: list[TraceEntry] = []`.
 - [X] T010 [US10] In `src/claim_intake/reporting.py`, add `render_trace(entries) -> str` (format in
   data-model.md; returns `"  (trace withheld: privacy check)"` if `find_pii` matches).
-- [ ] T011 [US10] In `src/claim_intake/orchestration.py`: `TaskRun.trace` entries; `file_claim`
+- [X] T011 [US10] In `src/claim_intake/orchestration.py`: `TaskRun.trace` entries; `file_claim`
   appends intake, assessment, risk, and saved entries; `fail()` and the privacy path append a
   `failed` or `saved` entry; results carry `trace`.
 - [ ] T012 [US10] In `src/claim_intake/existing_claims.py`, add update and help entries (research R3
