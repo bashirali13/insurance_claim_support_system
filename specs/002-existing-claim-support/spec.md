@@ -29,6 +29,7 @@ acceptance criteria **AC-6.x–AC-8.x**. IDs stay unique across the project.
 - Q: In Get help, what happens with an unknown or malformed claim number? → A: Show the same hint as option 2 and ask again; pressing Enter continues without a claim number; only a verified claim number is linked to the request.
 - Q: After an update re-runs routing, are the claim's teams replaced or accumulated? → A: Replaced. Teams and the follow-up date become the latest result (a deliberate trade-off: a routine update can drop a previously routed team, while an `ESCALATED` status is kept by FR-208).
 - Plan-time consistency fix: FR-218 no longer lists `CHECK_STATUS`, because AC-6.8 forbids status checks from changing any file, including the event log.
+- Plan-time gap fix: AC-8.12 added so the Get help privacy-review outcome (required by FR-217 but previously unspecified for customers) has an acceptance criterion, matching phase 001 AC-5.8 and AC-7.10.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -198,6 +199,12 @@ number, then check the categories, teams, dates, reference number, saved help re
     a malformed or unknown claim number, **Then** the customer sees the same hint as option 2
     (AC-6.3 / AC-6.4), followed by "Press Enter to continue without one.", and is asked again.
     Only a claim number that exists is linked to the request.
+12. **AC-8.12**: **Given** personal information remains after scrubbing a help request, or would
+    appear in its reply, report, or record, **When** it is processed, **Then** a help reference is
+    issued, a minimal help record is saved (routed to Privacy Review with a 3-business-day
+    follow-up, with no text, categories, or sentiment), a status-only report is written, and the
+    customer sees "We've received your request. A specialist will review it by <date>." plus the
+    reference.
 
 ---
 
@@ -340,7 +347,7 @@ number, then check the categories, teams, dates, reference number, saved help re
   of an evaluation set of at least 14 fictional help requests (E08–E12 plus variants).
 - **SC-205**: Zero personal values appear in any reply, report, claim record, help record, or event
   log line across all automated and live checks.
-- **SC-206**: Every acceptance criterion AC-6.1 to AC-8.11 (including AC-7.12) is verified by at
+- **SC-206**: Every acceptance criterion AC-6.1 to AC-8.12 (including AC-7.12) is verified by at
   least one automated check that names it.
 
 ## Assumptions
