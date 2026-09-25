@@ -165,7 +165,7 @@ The contact-change history detail is fixed.
 
 - [X] T017 [US11] In `src/claim_intake/existing_claims.py`, set the history detail to
   `"contact change requested"` for a contact-only update (Green for T015).
-- [ ] T018 [P] [US11] Create `tests/fixtures/narratives/adversarial_cases.json` (≥ 12 fictional
+- [X] T018 [P] [US11] Create `tests/fixtures/narratives/adversarial_cases.json` (≥ 12 fictional
   inputs covering injection, PII in every position, decision-extraction attempts, contradictions,
   and non-English text, each with `secrets` and an `injection` flag).
 - [ ] T019 [US11] Add `test_ac_11_3_live_adversarial_set_is_customer_safe` to
