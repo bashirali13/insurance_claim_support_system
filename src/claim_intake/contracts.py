@@ -306,3 +306,32 @@ class EventLogEntry(Contract):
     outcome: ProcessingStatus
     duration_ms: int
     error_category: str | None
+
+
+# --- Updates to an existing claim (specs/002 US7) ----------------------------------------------
+
+
+class UpdateLlmOutput(Contract):
+    """What the update-mode model may return: the full facts after the customer's update."""
+
+    updated: AssessmentLlmOutput
+    contact_change_requested: bool
+
+
+class FieldChange(Contract):
+    field: str
+    old: str | None
+    new: str | None
+
+
+class FactChanges(Contract):
+    """What an update changed, decided by code (rules.diff_facts), never by the model."""
+
+    added: list[FieldChange]
+    corrected: list[FieldChange]
+    sensitive: list[FieldChange]
+    applied: AssessmentLlmOutput
+
+    @property
+    def is_empty(self) -> bool:
+        return not (self.added or self.corrected or self.sensitive)

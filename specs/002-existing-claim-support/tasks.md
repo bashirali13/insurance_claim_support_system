@@ -172,7 +172,7 @@ check the reply, the saved record, and the history.
 
 ### Implementation for User Story 7
 
-- [ ] T017 [US7] In contracts: `UpdateLlmOutput`, `FieldChange`, `FactChanges`. In
+- [X] T017 [US7] In contracts: `UpdateLlmOutput`, `FieldChange`, `FactChanges`. In
   `src/claim_intake/rules.py`:
   - `diff_facts(saved, updated)` (research R2 table; sensitive = a correction to the five fields)
   - `status_after_update(current, level, missing)`
