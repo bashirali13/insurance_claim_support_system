@@ -145,7 +145,7 @@ The contact-change history detail is fixed.
 
 ### Tests
 
-- [ ] T015 [P] [US11] Red: append
+- [X] T015 [P] [US11] Red: append
   `test_ac_11_4_contact_only_update_records_contact_change_requested` to
   `tests/integration/test_update_claim.py`.
 - [ ] T016 [P] [US11] Verification: write `tests/integration/test_adversarial.py` with the shared
