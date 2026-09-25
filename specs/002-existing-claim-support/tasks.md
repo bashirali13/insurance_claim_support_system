@@ -183,7 +183,7 @@ check the reply, the saved record, and the history.
 - [X] T019 [US7] In `src/claim_intake/reporting.py`: `render_update_reply`,
   `render_update_report`, and a task-wording parameter for `render_status_only_report` (phase
   001's calls pass "File a new claim").
-- [ ] T020 [US7] In `src/claim_intake/existing_claims.py`: `update_claim(claim_id, raw_text, deps,
+- [X] T020 [US7] In `src/claim_intake/existing_claims.py`: `update_claim(claim_id, raw_text, deps,
   on_progress)` per contracts/agents.md (normal, no-change, privacy, and failure paths; `_Run`
   with task `UPDATE_DETAILS`).
 - [ ] T021 [US7] In `src/claim_intake/cli.py`: option 3 (closed and privacy-review refusals, text

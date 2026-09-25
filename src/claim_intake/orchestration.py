@@ -33,7 +33,7 @@ from claim_intake.contracts import (
 )
 from claim_intake.dates import add_business_days
 from claim_intake.pii import find_pii
-from claim_intake.reporting import format_follow_up, render_status_only_report
+from claim_intake.reporting import TASK_WORDING, format_follow_up, render_status_only_report
 from claim_intake.storage import ClaimStore, EventLog, ReportWriter
 
 PROGRESS_LABELS = (
@@ -90,13 +90,26 @@ def _with_model_retries[T](call: Callable[[], T]) -> T:
 
 
 class _Run:
-    """One filing: tracks the claim number and writes one event-log line per step."""
+    """One task run: tracks the claim number and writes one event-log line per step.
 
-    def __init__(self, deps: Deps, task: MenuTask = MenuTask.FILE_CLAIM):
+    `claim_id` is preset for an existing claim. Only a number this run reserved itself is ever
+    released on failure, so a failed update can never delete a customer's claim.
+    """
+
+    def __init__(
+        self, deps: Deps, task: MenuTask = MenuTask.FILE_CLAIM, claim_id: str | None = None
+    ):
         self.deps = deps
         self.filed_at = deps.now()
-        self.claim_id: str | None = None
+        self.claim_id = claim_id
         self.task = task
+        self.reserved = False
+
+    def reserve(self) -> str:
+        if self.claim_id is None:
+            self.claim_id = self.deps.store.reserve_claim_id(self.filed_at.year)
+            self.reserved = True
+        return self.claim_id
 
     def log(self, step: PipelineStep, outcome: ProcessingStatus, started: float, error=None):
         self.deps.events.append(
@@ -127,7 +140,7 @@ class _Run:
         started = time.perf_counter()
         follow_up = add_business_days(self.filed_at.date(), PRIVACY_REVIEW_DAYS)
         try:
-            self.claim_id = self.claim_id or self.deps.store.reserve_claim_id(self.filed_at.year)
+            self.reserve()
             self.deps.store.save(
                 ClaimRecord(
                     claim_id=self.claim_id,
@@ -156,9 +169,9 @@ class _Run:
 
     def fail(self, failure: _StepFailed) -> TaskResult:
         """No claim record survives a failure; a status-only report records what happened."""
-        if self.claim_id:
+        if self.reserved:
             self.deps.store.release(self.claim_id)
-            self.claim_id = None
+            self.claim_id, self.reserved = None, False
         try:
             path = str(
                 self._write_status_report(failure.status, failure.step, failure.error_category)
@@ -167,14 +180,19 @@ class _Run:
             path = None
         return TaskResult(
             processing_status=failure.status,
-            claim_id=None,
+            claim_id=self.claim_id,
             customer_message=FAILURE_MESSAGES[failure.status],
             report_path=path,
         )
 
     def _write_status_report(self, status, step, error_category) -> Path:
         report = render_status_only_report(
-            self.claim_id, self.filed_at, status, failed_step=step, error_category=error_category
+            self.claim_id,
+            self.filed_at,
+            status,
+            failed_step=step,
+            error_category=error_category,
+            task=TASK_WORDING[self.task],
         )
         return self.deps.reports.write(report, self.claim_id, self.filed_at)
 
@@ -218,7 +236,7 @@ def file_claim(
         on_progress(3, PROGRESS_LABELS[2])
 
         def compose_reply() -> tuple[CustomerReply, InternalReport]:
-            run.claim_id = run.claim_id or deps.store.reserve_claim_id(run.filed_at.year)
+            run.reserve()
             return _with_model_retries(
                 lambda: summary.compose(
                     run.claim_id, run.filed_at, submission, facts, routing, agents

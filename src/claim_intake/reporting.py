@@ -14,6 +14,7 @@ from claim_intake.contracts import (
     FactChanges,
     IncidentType,
     InternalReport,
+    MenuTask,
     MissingItem,
     PiiType,
     PipelineStep,
@@ -156,6 +157,7 @@ def _list_section(title: str, items: list[str]) -> list[str]:
 
 FILE_CLAIM_TASK = "File a new claim"
 UPDATE_TASK = "Add or correct details"
+TASK_WORDING = {MenuTask.FILE_CLAIM: FILE_CLAIM_TASK, MenuTask.UPDATE_DETAILS: UPDATE_TASK}
 
 
 def _header(
