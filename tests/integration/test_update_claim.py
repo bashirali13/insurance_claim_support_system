@@ -207,3 +207,11 @@ def test_ac_7_10_residual_pii_opens_privacy_review_without_applying_update(
     assert saved.follow_up_date == date(2026, 9, 29)
     assert saved.history[-1].event == "PRIVACY_REVIEW_OPENED"
     assert "555-201-3344" not in all_text(workdirs)
+
+
+def test_ac_11_4_contact_only_update_records_contact_change_requested(workdirs, fixed_now, store):
+    run_update(
+        workdirs, fixed_now, "My new phone number is 555-908-1200.", *answers(store, contact=True)
+    )
+
+    assert store.load(CLAIM).history[-1].detail == "contact change requested"

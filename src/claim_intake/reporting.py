@@ -4,6 +4,7 @@ The model supplies only the opening line, recorded points, and staff summary. Ev
 including every date, team, and missing item, is rendered here from the structured contracts.
 """
 
+import textwrap
 from datetime import date, datetime
 
 from claim_intake.contracts import (
@@ -26,8 +27,10 @@ from claim_intake.contracts import (
     SummaryLlmOutput,
     Team,
     TeamPromise,
+    TraceEntry,
     TriState,
 )
+from claim_intake.pii import find_pii
 
 RULE = "-" * 50
 DECISION_NOTICE = "> Supports intake and triage only. Not a coverage, fault, or claim decision."
@@ -429,3 +432,36 @@ def render_help_report(
     lines += _privacy_section(submission.pii_types_removed)
     lines += ["", "---", DECISION_NOTICE, ""]
     return InternalReport(markdown="\n".join(lines))
+
+
+# --- Staff trace (specs/003 US10, --trace) ------------------------------------------------------
+
+TRACE_HEADER_WIDTH = 50
+TRACE_LINE_WIDTH = 100
+TRACE_WITHHELD = "  (trace withheld: privacy check)"
+
+
+def _trace_lines(values: dict[str, str], prefix: str) -> list[str]:
+    """`key: value` pairs joined by two spaces, wrapped on spaces at TRACE_LINE_WIDTH."""
+    text = "  ".join(f"{key}: {value or '-'}" for key, value in values.items())
+    return textwrap.wrap(
+        text,
+        width=TRACE_LINE_WIDTH,
+        initial_indent=prefix,
+        subsequent_indent=prefix,
+        break_long_words=False,
+        break_on_hyphens=False,
+    )
+
+
+def render_trace(entries: list[TraceEntry]) -> str:
+    """The sanitized staff trace block. Withheld entirely if the privacy check finds anything."""
+    lines = []
+    for i, entry in enumerate(entries):
+        last = i == len(entries) - 1
+        corner = "└" if last else ("┌" if i == 0 else "├")
+        header = f"  {corner} trace ─ {entry.step} "
+        lines.append(header + "─" * (TRACE_HEADER_WIDTH - len(header)))
+        lines += _trace_lines(entry.values, "    " if last else "  │ ")
+    block = "\n".join(lines)
+    return TRACE_WITHHELD if find_pii(block) else block

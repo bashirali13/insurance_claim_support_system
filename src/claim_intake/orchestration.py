@@ -30,6 +30,7 @@ from claim_intake.contracts import (
     RiskAssessment,
     TaskResult,
     Team,
+    TraceEntry,
 )
 from claim_intake.dates import add_business_days
 from claim_intake.pii import find_pii
@@ -104,6 +105,17 @@ class TaskRun:
         self.claim_id = claim_id
         self.task = task
         self.reserved = False
+        self.trace: list[TraceEntry] = []
+
+    def note(self, name: str, /, **values) -> None:
+        """Record a trace entry (US10). Callers pass only structured values, never free text."""
+        self.trace.append(TraceEntry(step=name, values={k: str(v) for k, v in values.items()}))
+
+    def release_reservation(self) -> None:
+        """Give back a claim number this run reserved (never an existing claim's)."""
+        if self.reserved:
+            self.deps.store.release(self.claim_id)
+            self.claim_id, self.reserved = None, False
 
     def reserve(self) -> str:
         if self.claim_id is None:
@@ -156,6 +168,7 @@ class TaskRun:
         except OSError as exc:
             return self.fail(StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
         self.log(step, ProcessingStatus.MANUAL_REVIEW_REQUIRED, started)
+        self.note("saved", claim=self.claim_id, teams=Team.PRIVACY_REVIEW, report=path.name)
         return TaskResult(
             processing_status=ProcessingStatus.MANUAL_REVIEW_REQUIRED,
             claim_id=self.claim_id,
@@ -165,24 +178,25 @@ class TaskRun:
                 f"{format_follow_up(follow_up)} before processing."
             ),
             report_path=str(path),
+            trace=self.trace,
         )
 
     def fail(self, failure: StepFailed) -> TaskResult:
         """No claim record survives a failure; a status-only report records what happened."""
-        if self.reserved:
-            self.deps.store.release(self.claim_id)
-            self.claim_id, self.reserved = None, False
+        self.release_reservation()
         try:
             path = str(
                 self.write_status_report(failure.status, failure.step, failure.error_category)
             )
         except OSError:
             path = None
+        self.note("failed", step=failure.step, error_category=failure.error_category)
         return TaskResult(
             processing_status=failure.status,
             claim_id=self.claim_id,
             customer_message=FAILURE_MESSAGES[failure.status],
             report_path=path,
+            trace=self.trace,
         )
 
     def write_status_report(self, status, step, error_category) -> Path:
@@ -197,8 +211,52 @@ class TaskRun:
         return self.deps.reports.write(report, self.claim_id, self.filed_at)
 
 
+def record_unexpected(deps: Deps, task: MenuTask, exc: Exception) -> None:
+    """FR-301: a status-only report for a bug outside the known failure types. Never prints."""
+    now = deps.now()
+    report = render_status_only_report(
+        None,
+        now,
+        ProcessingStatus.FAILED_UNEXPECTED,
+        failed_step=None,
+        error_category=type(exc).__name__,
+        task=TASK_WORDING[task],
+    )
+    deps.reports.write(report, None, now)
+
+
 def is_private(*texts: str) -> bool:
     return not any(find_pii(text) for text in texts)
+
+
+# --- Trace values (structured fields only) ------------------------------------------------------
+
+
+def joined(items) -> str:
+    return ", ".join(str(item) for item in items) or "none"
+
+
+def yes_no(flag: bool) -> str:
+    return "yes" if flag else "no"
+
+
+def note_intake(run: TaskRun, submission) -> None:
+    run.note(
+        "intake",
+        pii_removed=joined(submission.pii_types_removed),
+        manual_review=yes_no(submission.requires_manual_review),
+    )
+
+
+def note_risk(run: TaskRun, routing: RiskAssessment, teams, follow_up_by) -> None:
+    run.note(
+        "risk",
+        sentiment=routing.sentiment,
+        indicators=joined(routing.indicators),
+        risk=routing.risk_level,
+        teams=joined(teams),
+        follow_up_by=follow_up_by.isoformat(),
+    )
 
 
 def ignore_progress(step: int, label: str) -> None:
@@ -217,6 +275,7 @@ def file_claim(
             PipelineStep.INTAKE,
             lambda: with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
         )
+        note_intake(run, submission)
         on_progress(1, PROGRESS_LABELS[0])
         if submission.requires_manual_review:
             return run.privacy_review(PipelineStep.INTAKE)
@@ -224,6 +283,13 @@ def file_claim(
         facts: ClaimAssessment = run.step(
             PipelineStep.ASSESSMENT,
             lambda: with_model_retries(lambda: assessment.assess(submission, agents)),
+        )
+        run.note(
+            "assessment",
+            incident=facts.incident_type,
+            injury=facts.injury_present,
+            missing=joined(facts.missing_information),
+            coverage_lines=joined(facts.coverage_lines),
         )
         on_progress(2, PROGRESS_LABELS[1])
 
@@ -233,6 +299,7 @@ def file_claim(
                 lambda: risk.evaluate(submission, facts, run.filed_at.date(), agents)
             ),
         )
+        note_risk(run, routing, routing.teams, routing.follow_up_date)
         on_progress(3, PROGRESS_LABELS[2])
 
         def compose_reply() -> tuple[CustomerReply, InternalReport]:
@@ -267,12 +334,17 @@ def file_claim(
             return deps.reports.write(report, run.claim_id, run.filed_at)
 
         path = run.step(PipelineStep.SAVE, save)
+        run.note("saved", claim=run.claim_id, status=record.status, report=path.name)
     except StepFailed as failure:
         return run.fail(failure)
+    except BaseException:  # an unexpected bug or Ctrl+C: never leave a reserved number (FR-303)
+        run.release_reservation()
+        raise
 
     return TaskResult(
         processing_status=ProcessingStatus.COMPLETED,
         claim_id=run.claim_id,
         customer_message=reply.text,
         report_path=str(path),
+        trace=run.trace,
     )

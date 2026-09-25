@@ -222,6 +222,7 @@ class ProcessingStatus(StrEnum):
     FAILED_MODEL_ERROR = "FAILED_MODEL_ERROR"
     FAILED_VALIDATION = "FAILED_VALIDATION"
     FAILED_OUTPUT = "FAILED_OUTPUT"
+    FAILED_UNEXPECTED = "FAILED_UNEXPECTED"  # constitution v1.1.0
 
 
 class PipelineStep(StrEnum):
@@ -281,6 +282,16 @@ class ClaimRecord(Contract):
     pending_changes: list[PendingChange] = []
 
 
+TraceStep = Literal["intake", "assessment", "risk", "triage", "routing", "saved", "failed"]
+
+
+class TraceEntry(Contract):
+    """One step of the staff trace (specs/003 US10). Structured values only, never free text."""
+
+    step: TraceStep
+    values: dict[str, str]
+
+
 class TaskResult(Contract):
     """What every UI receives from the orchestrator."""
 
@@ -288,6 +299,7 @@ class TaskResult(Contract):
     claim_id: str | None
     customer_message: str
     report_path: str | None
+    trace: list[TraceEntry] = []  # printed only with --trace; never stored
 
 
 class MenuTask(StrEnum):

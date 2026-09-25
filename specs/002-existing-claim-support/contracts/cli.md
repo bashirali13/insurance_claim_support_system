@@ -16,13 +16,13 @@ With `--load-samples`, before the menu the app prints `Loaded N sample claims.` 
 
 | Option | Prompt |
 |---|---|
-| 2, 3 | `Enter your claim number (e.g. CLM-2026-0007): ` |
+| 2, 3 | `Enter your claim number (format CLM-YYYY-NNNN): ` |
 | 4 | `Enter your claim number (or press Enter if you don't have one): ` |
 
 | Entry | Options 2 and 3 | Option 4 |
 |---|---|---|
 | empty | back to the menu | continue without a claim |
-| malformed | `Claim numbers look like CLM-2026-0007. Please try again.` → re-prompt | same message + `Press Enter to continue without one.` → re-prompt |
+| malformed | `Claim numbers look like CLM-YYYY-NNNN. Please try again.` → re-prompt | same message + `Press Enter to continue without one.` → re-prompt |
 | well-formed, not found | `We couldn't find that claim number. Please check it and try again.` → re-prompt | same message + `Press Enter to continue without one.` → re-prompt |
 
 ## Option 2: status reply (AC-6.1 to AC-6.7)

@@ -114,7 +114,9 @@ and route work correctly, not to replace those decisions.
   up by claim ID, and status replies contain no PII.
 - **Storage:** sanitized JSON claim records in `data/claims/`, internal reports in `output/`.
 - **Failure statuses:** `REJECTED_INPUT`, `MANUAL_REVIEW_REQUIRED`, `FAILED_MODEL_ERROR`,
-  `FAILED_VALIDATION`, `FAILED_OUTPUT`.
+  `FAILED_VALIDATION`, `FAILED_OUTPUT`, `FAILED_UNEXPECTED`. `FAILED_UNEXPECTED` covers
+  programming errors outside the other categories; the customer sees a fixed, non-technical
+  message (added in v1.1.0).
   - Every failure MUST write a status-only report with no claim text and show a safe customer
     message.
   - Missing information, contradictions, and escalations are normal outcomes, not failures.
@@ -152,4 +154,4 @@ and route work correctly, not to replace those decisions.
 - **Compliance:** every `plan.md` Constitution Check MUST pass or record a justified deviation.
   `/speckit-analyze` MUST show no untraceable tests or code before implementation begins.
 
-**Version**: 1.0.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-24
+**Version**: 1.1.0 | **Ratified**: 2026-09-24 | **Last Amended**: 2026-09-25

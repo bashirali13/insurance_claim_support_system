@@ -27,7 +27,11 @@ from claim_intake.orchestration import (
     TaskRun,
     ignore_progress,
     is_private,
+    joined,
+    note_intake,
+    note_risk,
     with_model_retries,
+    yes_no,
 )
 from claim_intake.reporting import (
     HELP_TASK,
@@ -75,6 +79,7 @@ def _update_privacy_review(run: TaskRun, record: ClaimRecord, step: PipelineStep
         path = run.write_status_report(ProcessingStatus.MANUAL_REVIEW_REQUIRED, step, None)
     except OSError as exc:
         return run.fail(StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
+    run.note("saved", claim=record.claim_id, teams=joined(teams), report=path.name)
     return TaskResult(
         processing_status=ProcessingStatus.MANUAL_REVIEW_REQUIRED,
         claim_id=record.claim_id,
@@ -83,6 +88,7 @@ def _update_privacy_review(run: TaskRun, record: ClaimRecord, step: PipelineStep
             f"{format_follow_up(follow_up)} before it's added to your claim."
         ),
         report_path=str(path),
+        trace=run.trace,
     )
 
 
@@ -102,6 +108,7 @@ def update_claim(
             PipelineStep.INTAKE,
             lambda: with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
         )
+        note_intake(run, submission)
         on_progress(1, UPDATE_PROGRESS_LABELS[0])
         if submission.requires_manual_review:
             return _update_privacy_review(run, record, PipelineStep.INTAKE)
@@ -114,6 +121,13 @@ def update_claim(
         )
         changes = rules.diff_facts(record.assessment, proposed.updated)
         contact = proposed.contact_change_requested
+        run.note(
+            "assessment",
+            added=joined(c.field for c in changes.added),
+            corrected=joined(c.field for c in changes.corrected),
+            pending=joined(c.field for c in changes.sensitive),
+            contact_change=yes_no(contact),
+        )
         on_progress(2, UPDATE_PROGRESS_LABELS[1])
         if changes.is_empty and not contact:
             return TaskResult(
@@ -121,6 +135,7 @@ def update_claim(
                 claim_id=claim_id,
                 customer_message=NOTHING_CHANGED,
                 report_path=None,
+                trace=run.trace,
             )
 
         facts = assessment.complete(changes.applied)
@@ -155,11 +170,12 @@ def update_claim(
                 HistoryEntry(
                     at=run.filed_at,
                     event="DETAILS_UPDATED",
-                    detail=", ".join(changed_fields) or None,
+                    detail=", ".join(changed_fields) or "contact change requested",
                 ),
             ],
             pending_changes=[*record.pending_changes, *pending],
         )
+        note_risk(run, routing, teams, updated.follow_up_date)
 
         def render():
             reply = render_update_reply(
@@ -200,6 +216,7 @@ def update_claim(
             return deps.reports.write(report, claim_id, run.filed_at)
 
         path = run.step(PipelineStep.SAVE, save)
+        run.note("saved", claim=claim_id, status=updated.status, report=path.name)
     except StepFailed as failure:
         return run.fail(failure)
 
@@ -208,6 +225,7 @@ def update_claim(
         claim_id=claim_id,
         customer_message=reply.text,
         report_path=str(path),
+        trace=run.trace,
     )
 
 
@@ -270,6 +288,7 @@ def _help_privacy_review(
         help_store.release(help_id)
         return run.fail(StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
     run.log(step, ProcessingStatus.MANUAL_REVIEW_REQUIRED, started)
+    run.note("saved", reference=help_id, teams=Team.PRIVACY_REVIEW, report=path.name)
     return TaskResult(
         processing_status=ProcessingStatus.MANUAL_REVIEW_REQUIRED,
         claim_id=claim_id,
@@ -278,6 +297,7 @@ def _help_privacy_review(
             f"{format_follow_up(follow_up)}.\nReference: {help_id}"
         ),
         report_path=str(path),
+        trace=run.trace,
     )
 
 
@@ -298,6 +318,7 @@ def get_help(
             PipelineStep.INTAKE,
             lambda: with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
         )
+        note_intake(run, submission)
         on_progress(1, HELP_PROGRESS_LABELS[0])
         if submission.requires_manual_review:
             return _help_privacy_review(run, help_store, None, claim_id, PipelineStep.INTAKE)
@@ -307,6 +328,21 @@ def get_help(
             lambda: with_model_retries(lambda: risk.triage(submission, agents)),
         )
         promises = rules.help_routing(triage, submission.text)
+        routed = [
+            TeamPromise(
+                team=team, business_days=days, follow_up_date=add_business_days(today, days)
+            )
+            for team, days in promises
+        ]
+        flagged = triage.legal_representation_mentioned or triage.possible_prompt_injection
+        run.note(
+            "triage",
+            categories=joined(triage.categories),
+            sentiment=triage.sentiment,
+            flagged=yes_no(flagged or rules.has_injection_phrase(submission.text)),
+        )
+        teams = [f"{p.team} by {p.follow_up_date.isoformat()}" for p in routed]
+        run.note("routing", teams=", ".join(teams) or "no team routed")
         on_progress(2, HELP_PROGRESS_LABELS[1])
         if not promises:  # out of scope or "how do I file": redirect only, nothing saved
             reply = render_help_reply([], triage.categories, opening=None, help_id=None)
@@ -315,14 +351,8 @@ def get_help(
                 claim_id=claim_id,
                 customer_message=reply.text,
                 report_path=None,
+                trace=run.trace,
             )
-
-        routed = [
-            TeamPromise(
-                team=team, business_days=days, follow_up_date=add_business_days(today, days)
-            )
-            for team, days in promises
-        ]
 
         def compose():
             nonlocal help_id
@@ -368,15 +398,21 @@ def get_help(
             return path
 
         path = run.step(PipelineStep.SAVE, save)
+        run.note("saved", reference=help_id, report=path.name)
     except StepFailed as failure:
         if help_id:  # AC-8.13: no reference survives a failure
             help_store.release(help_id)
         run.claim_id = claim_id
         return run.fail(failure)
+    except BaseException:  # an unexpected bug or Ctrl+C: never leave a reserved reference
+        if help_id:
+            help_store.release(help_id)
+        raise
 
     return TaskResult(
         processing_status=ProcessingStatus.COMPLETED,
         claim_id=claim_id,
         customer_message=reply.text,
         report_path=str(path),
+        trace=run.trace,
     )

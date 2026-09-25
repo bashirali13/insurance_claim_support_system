@@ -160,7 +160,7 @@ The customer never sees their own phone number or name repeated back. That's by 
 
 ```text
 Choose an option (1-5): 2
-Enter your claim number (e.g. CLM-2026-0007): CLM-2026-0007
+Enter your claim number (format CLM-YYYY-NNNN): CLM-2026-0007
 
 Claim CLM-2026-0007: Collision (filed Sep 24, 2026)
   Status:      Under review by a claims adjuster
@@ -301,8 +301,10 @@ customer view. It's useful for demos, debugging, and reviewers:
   └ trace ─ saved: data/claims/CLM-2026-0007.json
 ```
 
-It's built at the end of implementation. It is cheap to add then because every handoff is already
-a structured model. If a mid-development debugging need justifies it earlier, it can move up.
+Built in phase 003. The example above shows the idea; the exact layout comes from
+`render_trace` (see `specs/003-hardening-and-release/data-model.md`). The trace is printed to the
+terminal only: it is never written to files or the event log, and it is withheld entirely if a
+personal value is ever detected in it.
 
 ---
 

@@ -5,13 +5,11 @@ from datetime import date
 import pytest
 
 from claim_intake import cli
-from claim_intake.agents import create_agents
-from claim_intake.contracts import ProcessingStatus, TaskResult
-from claim_intake.orchestration import Deps
-from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples
-from tests.conftest import failing_model
+from claim_intake.contracts import IntakeLlmOutput, ProcessingStatus, TaskResult, TraceEntry
+from tests.builders import assessment_output, risk_output, summary_output
+from tests.conftest import structured_model
+from tests.integration.conftest import HEADER, make_deps, snapshot
 
-HEADER = " Northstar Auto Insurance: Claim Support"
 MENU_OPTIONS = [
     " 1. File a new claim",
     " 2. Check my claim status",
@@ -19,17 +17,6 @@ MENU_OPTIONS = [
     " 4. Get help with my claim",
     " 5. Exit",
 ]
-
-
-@pytest.fixture
-def keyboard(monkeypatch):
-    """Feed lines to input() in order; returns a setter."""
-
-    def type_lines(*lines: str) -> None:
-        queue = list(lines)
-        monkeypatch.setattr("builtins.input", lambda prompt="": queue.pop(0))
-
-    return type_lines
 
 
 @pytest.fixture
@@ -53,23 +40,6 @@ def filed(monkeypatch):
 def run_app(capsys, deps=None) -> tuple[int, str]:
     code = cli.run(deps=deps)
     return code, capsys.readouterr().out
-
-
-@pytest.fixture
-def sample_deps(workdirs, fixed_now):
-    """Sample claims loaded into a temp folder; any model call would fail loudly."""
-    load_samples(workdirs)
-    return Deps(
-        agents=create_agents(failing_model(AssertionError("no model call expected"))),
-        store=ClaimStore(workdirs),
-        reports=ReportWriter(workdirs),
-        events=EventLog(workdirs),
-        now=lambda: fixed_now,
-    )
-
-
-def snapshot(root) -> dict:
-    return {p: p.read_bytes() for p in sorted(root.rglob("*")) if p.is_file()}
 
 
 def test_ac_5_1_menu_shows_header_notice_and_five_options(keyboard, capsys):
@@ -156,6 +126,11 @@ def test_ac_6_1_option_2_prints_status_for_sample_claim(keyboard, sample_deps, c
     assert "Next step:   A claims adjuster will contact you by Friday, Sep 25." in out
 
 
+def test_ac_6_3_claim_number_prompt_shows_the_format_not_a_real_number():
+    # The keyboard fixture replaces input(), so the prompt text is checked directly.
+    assert cli.CLAIM_NUMBER_PROMPT == "Enter your claim number (format CLM-YYYY-NNNN): "
+
+
 def test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu(
     keyboard, sample_deps, workdirs, capsys
 ):
@@ -164,7 +139,7 @@ def test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu(
 
     _, out = run_app(capsys, sample_deps)
 
-    assert "Claim numbers look like CLM-2026-0007. Please try again." in out
+    assert "Claim numbers look like CLM-YYYY-NNNN. Please try again." in out
     assert out.count(HEADER) == 2
     assert snapshot(workdirs) == before  # FR-219: no report or event-log line
 
@@ -299,7 +274,7 @@ def test_ac_8_11_enter_continues_without_claim_number(keyboard, sample_deps, hel
 @pytest.mark.parametrize(
     ("entry", "message"),
     [
-        ("clm 2026 5", "Claim numbers look like CLM-2026-0007. Please try again."),
+        ("clm 2026 5", "Claim numbers look like CLM-YYYY-NNNN. Please try again."),
         ("CLM-2026-9999", "We couldn't find that claim number. Please check it and try again."),
     ],
 )
@@ -321,3 +296,54 @@ def test_ac_8_1_option_4_flow_prints_help_reply(keyboard, sample_deps, helped, c
 
     assert "(help reply)" in out
     assert "coming soon" not in out
+
+
+# --- US10: --trace --------------------------------------------------------------------------
+
+
+@pytest.fixture
+def traced_filing(monkeypatch):
+    """A filing result carrying one trace entry, so CLI tests only check printing."""
+
+    def fake_file_claim(text, deps, on_progress=None):
+        return TaskResult(
+            processing_status=ProcessingStatus.COMPLETED,
+            claim_id="CLM-2026-0001",
+            customer_message="(reply)",
+            report_path=None,
+            trace=[TraceEntry(step="saved", values={"claim": "CLM-2026-0001"})],
+        )
+
+    monkeypatch.setattr(cli, "file_claim", fake_file_claim)
+
+
+def test_ac_10_1_trace_flag_prints_block_after_reply(keyboard, traced_filing, capsys):
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(None, trace=True)
+
+    out = capsys.readouterr().out
+    assert out.index("(reply)") < out.index("└ trace ─ saved")
+    assert "claim: CLM-2026-0001" in out
+
+
+def test_ac_10_5_no_trace_printed_without_flag(keyboard, traced_filing, capsys):
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(None)
+
+    assert "trace ─" not in capsys.readouterr().out
+
+
+def test_ac_10_5_trace_is_never_written_to_disk(keyboard, workdirs, fixed_now, capsys):
+    model = structured_model(
+        IntakeLlmOutput(suggestions=[]), assessment_output(), risk_output(), summary_output()
+    )
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(make_deps(workdirs, fixed_now, model), trace=True)
+
+    assert "trace ─" in capsys.readouterr().out
+    for path in workdirs.rglob("*"):
+        if path.is_file():
+            assert "trace ─" not in path.read_text(encoding="utf-8")
