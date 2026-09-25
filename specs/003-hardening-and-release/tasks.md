@@ -130,7 +130,7 @@ tested as pure formatting; the CLI prints it only with the flag.
   `failed` or `saved` entry; results carry `trace`.
 - [X] T012 [US10] In `src/claim_intake/existing_claims.py`, add update and help entries (research R3
   table), including "no team routed".
-- [ ] T013 [US10] In `src/claim_intake/cli.py`, add the `--trace` flag and print
+- [X] T013 [US10] In `src/claim_intake/cli.py`, add the `--trace` flag and print
   `render_trace(result.trace)` after replies of options 1, 3, and 4.
 - [ ] T014 [US10] Refactor pass, keeping the suite green.
 

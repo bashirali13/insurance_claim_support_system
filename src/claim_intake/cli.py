@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import sys
 from datetime import datetime
 from functools import partial
 from pathlib import Path
@@ -15,7 +16,7 @@ from claim_intake.config import ConfigError, build_model, load_settings  # noqa:
 from claim_intake.contracts import ClaimStatus, MenuTask  # noqa: E402
 from claim_intake.existing_claims import check_status, get_help, update_claim  # noqa: E402
 from claim_intake.orchestration import Deps, file_claim, record_unexpected  # noqa: E402
-from claim_intake.reporting import format_follow_up  # noqa: E402
+from claim_intake.reporting import format_follow_up, render_trace  # noqa: E402
 from claim_intake.rules import normalize_claim_number  # noqa: E402
 from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples  # noqa: E402
 
@@ -60,6 +61,14 @@ Press Enter on an empty line when you're done."""
 BAD_CLAIM_NUMBER = "Claim numbers look like CLM-2026-0007. Please try again."
 UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try again."
 PROGRESS_WIDTH = 42
+
+
+def show_result(result, trace: bool) -> None:
+    """Print the reply; with --trace, the sanitized staff trace follows (US10)."""
+    print(result.customer_message)
+    if trace and result.trace:
+        print()
+        print(render_trace(result.trace))
 
 
 def print_progress(step: int, label: str, total: int = 4) -> None:
@@ -111,7 +120,7 @@ def privacy_hold_message(follow_up, today) -> str:
     )
 
 
-def add_or_correct(deps: Deps, claim_id: str) -> None:
+def add_or_correct(deps: Deps, claim_id: str, trace: bool = False) -> None:
     """Option 3: refuse closed and privacy-review claims before asking for any text."""
     record = deps.store.load(claim_id)
     if record.status == ClaimStatus.CLOSED:
@@ -124,31 +133,31 @@ def add_or_correct(deps: Deps, claim_id: str) -> None:
     text = read_narrative(UPDATE_PROMPT)
     result = update_claim(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
-    print(result.customer_message)
+    show_result(result, trace)
     print()
 
 
-def get_help_with_claim(deps: Deps) -> None:
+def get_help_with_claim(deps: Deps, trace: bool = False) -> None:
     """Option 4: the claim number is optional; only a real one is linked."""
     claim_id = ask_claim_number(deps, optional=True)
     print()
     text = read_narrative(HELP_PROMPT)
     result = get_help(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
-    print(result.customer_message)
+    show_result(result, trace)
     print()
 
 
-def file_new_claim(deps: Deps) -> None:
+def file_new_claim(deps: Deps, trace: bool = False) -> None:
     """Option 1."""
     print()
     result = file_claim(read_narrative(), deps, on_progress=print_progress)
     print()
-    print(result.customer_message)
+    show_result(result, trace)
     print()
 
 
-def show_status(deps: Deps) -> None:
+def show_status(deps: Deps, trace: bool = False) -> None:
     """Option 2."""
     if claim_id := ask_claim_number(deps):
         print()
@@ -156,10 +165,10 @@ def show_status(deps: Deps) -> None:
         print()
 
 
-def update_details(deps: Deps) -> None:
+def update_details(deps: Deps, trace: bool = False) -> None:
     """Option 3."""
     if claim_id := ask_claim_number(deps):
-        add_or_correct(deps, claim_id)
+        add_or_correct(deps, claim_id, trace)
 
 
 # Menu choice → (action, task recorded on an unexpected error; None = write nothing, AC-6.8).
@@ -171,10 +180,10 @@ MENU_ACTIONS = {
 }
 
 
-def attempt(deps: Deps, action, task: MenuTask | None) -> None:
+def attempt(deps: Deps, action, task: MenuTask | None, trace: bool = False) -> None:
     """Last-resort boundary (FR-301): a bug shows a fixed message and the menu comes back."""
     try:
-        action(deps)
+        action(deps, trace)
     except EOFError:
         raise  # the terminal closed: handled by safe_run as Exit
     except Exception as exc:
@@ -186,12 +195,12 @@ def attempt(deps: Deps, action, task: MenuTask | None) -> None:
                 pass  # reporting must never turn a handled bug into a crash
 
 
-def run(deps: Deps) -> int:
+def run(deps: Deps, trace: bool = False) -> int:
     while True:
         print(MENU)
         choice = input("Choose an option (1-5): ").strip()
         if choice in MENU_ACTIONS:
-            attempt(deps, *MENU_ACTIONS[choice])
+            attempt(deps, *MENU_ACTIONS[choice], trace=trace)
         elif choice == "5":
             print(GOODBYE)
             return 0
@@ -199,10 +208,10 @@ def run(deps: Deps) -> int:
             print(INVALID_CHOICE)
 
 
-def safe_run(deps: Deps) -> int:
+def safe_run(deps: Deps, trace: bool = False) -> int:
     """End of input exits cleanly (AC-9.2); Ctrl+C stops without a traceback (AC-9.3)."""
     try:
-        return run(deps)
+        return run(deps, trace)
     except EOFError:
         print()
         print(GOODBYE)
@@ -229,7 +238,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "--load-samples", action="store_true", help="copy sample claims into data/claims/"
     )
+    parser.add_argument(
+        "--trace", action="store_true", help="show a sanitized staff trace after each reply"
+    )
     args = parser.parse_args(argv)
+    # A console that can't show a character (e.g. the trace's box lines) shows "?" instead of
+    # crashing; the customer view stays plain text either way.
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(errors="replace")
     load_dotenv()
     try:
         deps = build_deps(Path.cwd())
@@ -238,4 +254,4 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     if args.load_samples:
         print(f"Loaded {len(load_samples(Path.cwd()))} sample claims.")
-    return safe_run(deps)
+    return safe_run(deps, args.trace)
