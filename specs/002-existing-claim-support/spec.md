@@ -59,8 +59,9 @@ fixed text rendered from the saved record.
 2. **AC-6.2**: **Given** a claim number typed in lowercase or with surrounding spaces (e.g.,
    ` clm-2026-0005 `), **When** it is looked up, **Then** it is treated as `CLM-2026-0005`.
 3. **AC-6.3**: **Given** text that isn't a claim number (e.g., `clm 2026 5`), **When** it is
-   entered, **Then** the customer sees "Claim numbers look like CLM-2026-0007. Please try again."
-   and is asked again. An empty entry returns to the menu.
+   entered, **Then** the customer sees "Claim numbers look like CLM-YYYY-NNNN. Please try again."
+   and is asked again. An empty entry returns to the menu. The prompt and hint show the format
+   (`CLM-YYYY-NNNN`), never a real-looking claim number (amended 2026-09-25).
 4. **AC-6.4**: **Given** a well-formed claim number that doesn't exist, **When** it is looked up,
    **Then** the customer sees "We couldn't find that claim number. Please check it and try again."
    The message never reveals whether any other claim numbers exist.

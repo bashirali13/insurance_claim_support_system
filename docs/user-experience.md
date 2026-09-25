@@ -160,7 +160,7 @@ The customer never sees their own phone number or name repeated back. That's by 
 
 ```text
 Choose an option (1-5): 2
-Enter your claim number (e.g. CLM-2026-0007): CLM-2026-0007
+Enter your claim number (format CLM-YYYY-NNNN): CLM-2026-0007
 
 Claim CLM-2026-0007: Collision (filed Sep 24, 2026)
   Status:      Under review by a claims adjuster
