@@ -286,7 +286,7 @@ routing, the help record, the reply, and the claim history.
   - the manual walkthrough in a scratch folder
   - SC-201: time a status check
 - [X] T040 Run the final `uv run ruff format .`, `uv run ruff check .`, and full `uv run pytest`.
-- [ ] T041 Write `docs/prompt-history/06-implementation-002.md`, push the branch, open the phase PR
+- [X] T041 Write `docs/prompt-history/06-implementation-002.md`, push the branch, open the phase PR
   with `gh`, and present the phase-completion check before merging.
 
 ---
