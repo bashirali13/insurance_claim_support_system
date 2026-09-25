@@ -200,7 +200,7 @@ The contact-change history detail is fixed.
 - [X] T021 [US12] Write `docs/architecture.md`: a Mermaid flowchart (CLI → flows → four agents
   with modes → rules and privacy guard → storage and event log) and a Mermaid sequence diagram of
   "File a new claim" with the contract types on each arrow.
-- [ ] T022 [US12] Rewrite `README.md` per FR-310: what it does and doesn't do, setup, run
+- [X] T022 [US12] Rewrite `README.md` per FR-310: what it does and doesn't do, setup, run
   (including `--load-samples` and `--trace`), the menu options, safety guarantees, testing,
   structure, the SDD/TDD process, and links. Embed a summary Mermaid diagram.
 - [ ] T023 [US12] Capture samples with the real model in a scratch folder (research R6: S01, S10,
