@@ -31,3 +31,10 @@ def test_ac_5_7_complete_configuration_loads():
     )
 
     assert settings.model_name == "deepseek/deepseek-v4-flash-0731"
+
+
+def test_ac_5_7_model_name_without_provider_prefix_raises_config_error():
+    with pytest.raises(ConfigError) as raised:
+        load_settings({"OPENROUTER_API_KEY": "sk-test", "MODEL_NAME": "flash"})
+
+    assert str(raised.value) == SETUP_MESSAGE
