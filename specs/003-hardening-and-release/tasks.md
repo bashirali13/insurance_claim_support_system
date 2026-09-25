@@ -120,10 +120,10 @@ tested as pure formatting; the CLI prints it only with the flag.
 
 ### Implementation
 
-- [ ] T009 [US10] In `src/claim_intake/contracts.py`, add `TraceEntry` (`step` one of `intake,
+- [X] T009 [US10] In `src/claim_intake/contracts.py`, add `TraceEntry` (`step` one of `intake,
   assessment, risk, triage, routing, saved, failed`; `values: dict[str, str]`) and
   `TaskResult.trace: list[TraceEntry] = []`.
-- [ ] T010 [US10] In `src/claim_intake/reporting.py`, add `render_trace(entries) -> str` (format in
+- [X] T010 [US10] In `src/claim_intake/reporting.py`, add `render_trace(entries) -> str` (format in
   data-model.md; returns `"  (trace withheld: privacy check)"` if `find_pii` matches).
 - [ ] T011 [US10] In `src/claim_intake/orchestration.py`: `TaskRun.trace` entries; `file_claim`
   appends intake, assessment, risk, and saved entries; `fail()` and the privacy path append a

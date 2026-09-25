@@ -4,8 +4,8 @@ from claim_intake.contracts import TraceEntry
 from claim_intake.reporting import render_trace
 
 
-def entry(step: str, **values: str) -> TraceEntry:
-    return TraceEntry(step=step, values=values)
+def entry(name: str, **values: str) -> TraceEntry:
+    return TraceEntry(step=name, values=values)
 
 
 def test_ac_10_1_render_trace_matches_block_format():
