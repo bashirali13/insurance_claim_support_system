@@ -1,0 +1,15 @@
+[
+  {"id": "U01", "text": "The police report number is 26-44817.", "changed": ["police_report_mentioned"], "contact": false},
+  {"id": "U02", "text": "It was actually around 7pm, not 6pm.", "changed": ["incident_date"], "contact": false},
+  {"id": "U03", "text": "My new phone number is 555-908-1200.", "changed": [], "contact": true},
+  {"id": "U04", "text": "Actually nobody was hurt. My neck is completely fine.", "changed": ["customer_side_injured"], "contact": false},
+  {"id": "U05", "text": "I found out the rear door is dented too.", "changed": ["damage_areas"], "contact": false},
+  {"id": "U06", "text": "Sorry, it happened on Oak Ave, not Main St.", "changed": ["location"], "contact": false},
+  {"id": "U07", "text": "Update: the car won't start anymore since the accident.", "changed": ["vehicle_drivable"], "contact": false},
+  {"id": "U08", "text": "The pickup also hit a parked car behind me before driving off.", "changed": ["other_property_damaged"], "contact": false},
+  {"id": "U09", "text": "Please use my new email, jordan.r@example.com, from now on.", "changed": [], "contact": true},
+  {"id": "U10", "text": "Police report 26-55120 was filed, and it happened closer to 6:30pm.", "changed": ["police_report_mentioned", "incident_date"], "contact": false},
+  {"id": "U11", "text": "Just checking in on my claim, nothing new to add.", "changed": [], "contact": false},
+  {"id": "U12", "text": "A pedestrian on the sidewalk was also hurt when the pickup swerved.", "changed": ["others_injured"], "contact": false},
+  {"id": "U13", "text": "The police found the other driver, and he had no insurance at all.", "changed": ["um_uim_subtype"], "contact": false}
+]

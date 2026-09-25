@@ -1,0 +1,16 @@
+[
+  {"id": "H01", "text": "Your adjuster was rude to me on the phone yesterday.", "expected": "COMPLAINT"},
+  {"id": "H02", "text": "I'm really unhappy with how my claim is being handled.", "expected": "COMPLAINT"},
+  {"id": "H03", "text": "It's been a week and nobody has called me back.", "expected": "SERVICE_DELAY"},
+  {"id": "H04", "text": "I still haven't heard anything about my claim after ten days.", "expected": "SERVICE_DELAY"},
+  {"id": "H05", "text": "What does 'waiting for information' mean on my claim?", "expected": "CLAIM_QUESTION"},
+  {"id": "H06", "text": "Do you still need anything else from me for my claim?", "expected": "CLAIM_QUESTION"},
+  {"id": "H07", "text": "I'd like to speak to my adjuster about the repair estimate.", "expected": "SPEAK_TO_ADJUSTER"},
+  {"id": "H08", "text": "Can a real person please call me about my claim?", "expected": "SPEAK_TO_ADJUSTER"},
+  {"id": "H09", "text": "I moved last month, please update my address.", "expected": "CONTACT_CHANGE"},
+  {"id": "H10", "text": "I have a new phone number I need to give you.", "expected": "CONTACT_CHANGE"},
+  {"id": "H11", "text": "How do I file a claim for a new accident?", "expected": "FILE_A_CLAIM"},
+  {"id": "H12", "text": "I need to report another accident that happened today. Where do I start?", "expected": "FILE_A_CLAIM"},
+  {"id": "H13", "text": "Can I get a rental car while mine is in the shop?", "expected": "OUT_OF_SCOPE"},
+  {"id": "H14", "text": "I want to change my billing date to the 15th.", "expected": "OUT_OF_SCOPE"}
+]
