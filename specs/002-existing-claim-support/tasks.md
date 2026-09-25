@@ -177,7 +177,7 @@ check the reply, the saved record, and the history.
   - `diff_facts(saved, updated)` (research R2 table; sensitive = a correction to the five fields)
   - `status_after_update(current, level, missing)`
   - `update_follow_ups(...)` returning the promises and the earliest date
-- [ ] T018 [US7] In `src/claim_intake/agents/assessment.py`: the update-mode agent and
+- [X] T018 [US7] In `src/claim_intake/agents/assessment.py`: the update-mode agent and
   `update(sanitized, saved_assessment, agents)` (saved facts labeled outside the tags; instructions
   per contracts/agents.md). Register `assessment_update` in `create_agents`.
 - [ ] T019 [US7] In `src/claim_intake/reporting.py`: `render_update_reply`,

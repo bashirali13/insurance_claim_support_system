@@ -11,6 +11,7 @@ from claim_intake.contracts import (
     IntakeLlmOutput,
     RiskLlmOutput,
     SummaryLlmOutput,
+    UpdateLlmOutput,
 )
 
 
@@ -18,6 +19,7 @@ from claim_intake.contracts import (
 class Agents:
     intake: Agent[None, IntakeLlmOutput]
     assessment: Agent[None, AssessmentLlmOutput]
+    assessment_update: Agent[None, UpdateLlmOutput]
     risk: Agent[None, RiskLlmOutput]
     summary: Agent[None, SummaryLlmOutput]
 
@@ -26,6 +28,7 @@ def create_agents(model: Model) -> Agents:
     return Agents(
         intake=intake.build_agent(model),
         assessment=assessment.build_agent(model),
+        assessment_update=assessment.build_update_agent(model),
         risk=risk.build_agent(model),
         summary=summary.build_agent(model),
     )
