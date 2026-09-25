@@ -83,15 +83,6 @@ def test_ac_5_1_menu_shows_header_notice_and_five_options(keyboard, capsys):
         assert option in out
 
 
-def test_ac_5_1_option_4_says_coming_soon(keyboard, capsys):
-    keyboard("4", "5")
-
-    _, out = run_app(capsys)
-
-    assert "This option is coming soon." in out
-    assert out.count(HEADER) == 2
-
-
 def test_ac_5_1_invalid_choice_shows_hint_and_menu_again(keyboard, capsys):
     keyboard("9", "5")
 
@@ -273,3 +264,60 @@ def test_ac_7_1_option_3_flow_prints_update_reply(keyboard, sample_deps, monkeyp
     assert sent == [("CLM-2026-0005", "The police report number is 26-44817.")]
     assert "What would you like to add or correct?" in out
     assert "(update reply)" in out
+
+
+# --- US8: option 4 ------------------------------------------------------------------------
+
+
+@pytest.fixture
+def helped(monkeypatch):
+    """Replace get_help so CLI tests only check prompts; records (claim_id, text)."""
+    calls = []
+
+    def fake_get_help(claim_id, text, deps, on_progress=None):
+        calls.append((claim_id, text))
+        return TaskResult(
+            processing_status=ProcessingStatus.COMPLETED,
+            claim_id=claim_id,
+            customer_message="(help reply)",
+            report_path=None,
+        )
+
+    monkeypatch.setattr(cli, "get_help", fake_get_help)
+    return calls
+
+
+def test_ac_8_11_enter_continues_without_claim_number(keyboard, sample_deps, helped, capsys):
+    keyboard("4", "", "Nobody called me back.", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert helped == [(None, "Nobody called me back.")]
+    assert "How can we help?" in out
+
+
+@pytest.mark.parametrize(
+    ("entry", "message"),
+    [
+        ("clm 2026 5", "Claim numbers look like CLM-2026-0007. Please try again."),
+        ("CLM-2026-9999", "We couldn't find that claim number. Please check it and try again."),
+    ],
+)
+def test_ac_8_11_unknown_or_malformed_number_hint_with_skip_option(
+    entry, message, keyboard, sample_deps, helped, capsys
+):
+    keyboard("4", entry, "CLM-2026-0005", "When will someone call?", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert f"{message}\nPress Enter to continue without one." in out
+    assert helped == [("CLM-2026-0005", "When will someone call?")]
+
+
+def test_ac_8_1_option_4_flow_prints_help_reply(keyboard, sample_deps, helped, capsys):
+    keyboard("4", "CLM-2026-0005", "I'd like to speak to my adjuster.", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert "(help reply)" in out
+    assert "coming soon" not in out

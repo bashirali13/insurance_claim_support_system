@@ -8,12 +8,16 @@ from claim_intake.contracts import (
     PiiType,
     PipelineStep,
     ProcessingStatus,
+    RequestCategory,
     RiskIndicator,
     RiskLevel,
     Team,
+    TeamPromise,
     TriState,
 )
 from claim_intake.reporting import (
+    render_help_reply,
+    render_help_report,
     render_reply,
     render_report,
     render_status_only_report,
@@ -27,6 +31,7 @@ from tests.builders import (
     risk_assessment,
     sanitized,
     summary_output,
+    triage_output,
 )
 
 CLAIM_ID = "CLM-2026-0007"
@@ -287,3 +292,89 @@ def test_ac_7_9_status_only_report_names_update_task():
     ).markdown
 
     assert "- **Task:** Add or correct details" in report
+
+
+# --- US8: help reply and report -------------------------------------------------------------
+
+MONDAY = date(2026, 9, 28)
+OPENING = "We're sorry for the wait, and we're here to help."
+
+
+def promise(team: Team, days: int = 2, day: date = MONDAY) -> TeamPromise:
+    return TeamPromise(team=team, business_days=days, follow_up_date=day)
+
+
+def help_text(routed, categories, help_id="HELP-2026-0001", opening=OPENING) -> str:
+    return render_help_reply(routed, categories, opening=opening, help_id=help_id).text
+
+
+def test_ac_8_1_help_reply_lists_team_dates_and_reference():
+    text = help_text(
+        [promise(Team.CLAIMS_ADJUSTER), promise(Team.CUSTOMER_RELATIONS)],
+        [RequestCategory.SERVICE_DELAY, RequestCategory.SPEAK_TO_ADJUSTER],
+    )
+
+    assert text == (
+        f"{OPENING}\n"
+        "  • A claims adjuster will contact you by Monday, Sep 28.\n"
+        "  • Our Customer Relations team will contact you by Monday, Sep 28.\n"
+        "Reference: HELP-2026-0001"
+    )
+
+
+def test_ac_8_4_redirect_only_reply_has_no_reference():
+    text = help_text([], [RequestCategory.OUT_OF_SCOPE], help_id=None, opening=None)
+
+    assert text == (
+        "I'm sorry, I can only help with claims here. For billing, policy changes, rentals, "
+        "or roadside help, please call Northstar Auto Insurance at the number on your "
+        "insurance card."
+    )
+
+
+def test_ac_8_5_file_a_claim_line_points_to_option_1():
+    text = help_text([], [RequestCategory.FILE_A_CLAIM], help_id=None, opening=None)
+
+    assert text == "To file a new claim, choose option 1 from the menu."
+
+
+def test_ac_8_7_help_reply_never_mentions_special_review():
+    text = help_text(
+        [promise(Team.CLAIMS_ADJUSTER, 1), promise(Team.SPECIAL_REVIEW, 1)],
+        [RequestCategory.CLAIM_QUESTION],
+    )
+
+    assert "special" not in text.lower()
+
+
+def test_ac_8_8_distressed_out_of_scope_reply_has_redirect_and_team():
+    text = help_text([promise(Team.CUSTOMER_RELATIONS)], [RequestCategory.OUT_OF_SCOPE])
+
+    assert "Our Customer Relations team will contact you by Monday, Sep 28." in text
+    assert "I'm sorry, I can only help with claims here." in text
+    assert text.endswith("Reference: HELP-2026-0001")
+
+
+def test_ac_8_9_help_report_sections_and_notice():
+    report = render_help_report(
+        "HELP-2026-0001",
+        FILED_AT,
+        sanitized("Nobody has called me back."),
+        triage_output(categories=[RequestCategory.SERVICE_DELAY]),
+        [promise(Team.CUSTOMER_RELATIONS)],
+        claim_id="CLM-2026-0005",
+    ).markdown
+
+    sections = [
+        "# Claim Intake Report — HELP-2026-0001",
+        "- **Task:** Get help with my claim",
+        "- **Claim:** CLM-2026-0005",
+        "## Request",
+        "## Categories",
+        "## Sentiment",
+        "## Routing and Follow-up",
+        "## Privacy",
+        REPORT_SECTIONS[-1],
+    ]
+    positions = [report.index(s) for s in sections]
+    assert positions == sorted(positions)

@@ -204,7 +204,7 @@ routing, the help record, the reply, and the claim history.
 
 ### Tests for User Story 8 (write first; they must fail)
 
-- [ ] T023 [P] [US8] Write `tests/unit/test_help_rules.py` (pure `rules.help_routing`):
+- [X] T023 [P] [US8] Write `tests/unit/test_help_rules.py` (pure `rules.help_routing`):
   - `test_ac_8_1_service_delay_routes_customer_relations_two_days`
   - `test_ac_8_2_routing_table_*` (parametrized over every FR-213 row)
   - `test_ac_8_3_two_requests_each_team_once_fewest_days`
@@ -213,24 +213,24 @@ routing, the help record, the reply, and the claim history.
   - `test_ac_8_7_legal_or_injection_adds_special_review_and_adjuster_all_one_day` (includes the
     phrase-list case with no model flag)
   - `test_ac_8_8_distressed_or_angry_adds_customer_relations`
-- [ ] T024 [P] [US8] Append to `tests/unit/test_risk.py`:
+- [X] T024 [P] [US8] Append to `tests/unit/test_risk.py`:
   - `test_ac_8_10_triage_prompt_tags_request_and_marks_it_as_data`
   - `test_ac_8_2_triage_rejects_more_than_three_categories_then_fails`
 
   Append to `tests/unit/test_summary.py`:
   - `test_ac_8_1_help_opening_with_decision_words_or_pii_is_retried_then_fails`
   - `test_ac_8_1_clean_help_opening_passes`
-- [ ] T025 [P] [US8] Append to `tests/unit/test_storage.py`:
+- [X] T025 [P] [US8] Append to `tests/unit/test_storage.py`:
   - `test_ac_8_1_help_references_sequential_and_unique_across_restarts`
   - `test_ac_8_9_help_record_round_trips`
-- [ ] T026 [P] [US8] Append to `tests/unit/test_reporting.py`:
+- [X] T026 [P] [US8] Append to `tests/unit/test_reporting.py`:
   - `test_ac_8_1_help_reply_lists_team_dates_and_reference`
   - `test_ac_8_4_redirect_only_reply_has_no_reference`
   - `test_ac_8_5_file_a_claim_line_points_to_option_1`
   - `test_ac_8_7_help_reply_never_mentions_special_review`
   - `test_ac_8_9_help_report_sections_and_notice`
   - `test_ac_8_8_distressed_out_of_scope_reply_has_redirect_and_team`
-- [ ] T027 [P] [US8] Write `tests/integration/test_get_help.py`:
+- [X] T027 [P] [US8] Write `tests/integration/test_get_help.py`:
   - `test_ac_8_1_service_delay_end_to_end_saves_record_report_reference`
   - `test_ac_8_3_complaint_and_speak_to_adjuster_route_both_teams`
   - `test_ac_8_4_out_of_scope_writes_no_record_or_reference`
@@ -239,7 +239,7 @@ routing, the help record, the reply, and the claim history.
   - `test_ac_8_9_no_personal_values_anywhere_and_event_lines_have_help_task`
   - `test_ac_8_12_residual_pii_opens_minimal_privacy_help_record`
   - `test_ac_8_13_model_failure_creates_no_record_and_leaves_claim_unchanged`
-- [ ] T028 [P] [US8] In `tests/integration/test_cli.py`:
+- [X] T028 [P] [US8] In `tests/integration/test_cli.py`:
   - **remove** `test_ac_5_1_option_4_says_coming_soon` (FR-220 complete)
   - add `test_ac_8_11_enter_continues_without_claim_number`
   - add `test_ac_8_11_unknown_or_malformed_number_hint_with_skip_option`
