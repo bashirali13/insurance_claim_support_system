@@ -148,7 +148,7 @@ The contact-change history detail is fixed.
 - [X] T015 [P] [US11] Red: append
   `test_ac_11_4_contact_only_update_records_contact_change_requested` to
   `tests/integration/test_update_claim.py`.
-- [ ] T016 [P] [US11] Verification: write `tests/integration/test_adversarial.py` with the shared
+- [X] T016 [P] [US11] Verification: write `tests/integration/test_adversarial.py` with the shared
   helper `assert_customer_safe(result, workdirs, secrets)` (no secret in any file or the reply, no
   placeholder in the reply, no forbidden decision term in the reply, every event-log line
   structured), plus:
