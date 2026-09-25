@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,7 +31,6 @@
 
 ## Notes
 
-- Deferred to `/speckit-clarify` (marked "see Clarifications"): how unexpected errors are reported
-  and whether the app continues (AC-9.1, FR-301); where the trace is written (AC-10.5, Trace Block);
-  and the architecture diagram's format (AC-12.3).
+- The three deferred decisions, plus sample-output provenance, were resolved in
+  `/speckit-clarify` (session 2026-09-25). See the spec's Clarifications.
 - Documentation criteria (AC-12.1, AC-12.3) are verified by named quickstart steps, as SC-306 states.

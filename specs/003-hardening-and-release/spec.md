@@ -19,6 +19,15 @@ guarantees hold together; and the project is documented for a reader who has nev
 
 **Numbering**: continues from phase 002. Stories **US9–US12**, criteria **AC-9.x–AC-12.x**.
 
+## Clarifications
+
+### Session 2026-09-25
+
+- Q: When an unexpected bug happens during a menu task, should the app go back to the menu or exit, and how is it recorded? → A: Show the fixed message, return to the menu, and write a status-only report with the new status `FAILED_UNEXPECTED` and the exception class name as the error category.
+- Q: Where does `--trace` output go? → A: Terminal only; it is printed after each reply and never written to disk.
+- Q: What format should the architecture diagram use? → A: Mermaid in `docs/architecture.md`, with a short summary version embedded in the README.
+- Q: Should committed samples come from real-model or scripted runs? → A: Real-model runs, reviewed and committed; a test checks each sample is free of personal values and has the required sections, without comparing exact wording.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 9 - The customer never sees a raw error (Priority: P1)
@@ -41,8 +50,8 @@ traceback.
 1. **AC-9.1**: **Given** any menu task raises an unexpected error (a programming bug, not a model,
    validation, or storage failure), **When** it happens, **Then** the customer sees "Something went
    wrong on our side. Please try again later." with no technical detail, the app returns to the
-   menu, and a status-only report is written with error category `UNEXPECTED_ERROR` and the
-   exception's class name. [Status name and whether the app continues: see Clarifications]
+   menu, and a status-only report is written with status `FAILED_UNEXPECTED` and the exception's
+   class name as its error category. The next menu choice works normally.
 2. **AC-9.2**: **Given** the customer's input ends unexpectedly (end-of-file) at any prompt, **When**
    it happens, **Then** the app prints the goodbye message and exits with code 0, with no traceback.
 3. **AC-9.3**: **Given** the customer presses Ctrl+C at any prompt or while a claim is being
@@ -83,8 +92,8 @@ block with the contracts' values and check it for PII.
    no model-written prose (opening lines, summaries, rationales), and no personal values, and it
    passes the same final privacy check as other output.
 5. **AC-10.5**: **Given** the app is started **without** `--trace`, **When** any flow runs, **Then**
-   no trace is printed (the customer view is unchanged). [Where the trace is written: see
-   Clarifications]
+   no trace is printed (the customer view is unchanged). **And** with or without `--trace`, no
+   trace is ever written to any file.
 
 ---
 
@@ -142,11 +151,14 @@ and every file it links exists.
    to an existing file, and every command it shows is a real CLI option or test command.
 3. **AC-12.3**: **Given** the architecture diagram, **When** it is viewed, **Then** it shows the
    menu/CLI, the orchestrator and flows, the four agents and their modes, the rules and privacy
-   guard, storage, and the event log, and it matches the implemented modules. [Diagram format: see
-   Clarifications]
+   guard, storage, and the event log, and it matches the implemented modules. It is a Mermaid
+   diagram in `docs/architecture.md`, with a summary version embedded in the README, both
+   rendering on GitHub.
 4. **AC-12.4**: **Given** `docs/samples/`, **When** it is checked, **Then** it contains at least one
    customer reply and staff report for filing, updating, and help (including one privacy-review and
-   one escalation example), all fictional and free of personal values.
+   one escalation example), all fictional and free of personal values. Samples come from real-model
+   runs (reviewed before committing), and an automated check verifies no personal values and the
+   required reply and report sections, without comparing exact wording.
 
 ---
 
@@ -168,7 +180,9 @@ and every file it links exists.
 **Graceful failure (US9)**
 
 - **FR-301**: The CLI MUST catch any unexpected exception from a menu task, show the AC-9.1
-  message, write a status-only report, and continue per the Clarifications decision.
+  message, write a status-only report with status `FAILED_UNEXPECTED`, and return to the menu.
+  `ProcessingStatus` gains `FAILED_UNEXPECTED`. This adds to the constitution's list of failure
+  statuses, which requires a constitution amendment (MINOR).
 - **FR-302**: The CLI MUST treat end-of-input as Exit (AC-9.2) and Ctrl+C as an interruption
   (AC-9.3). Neither may show a traceback.
 - **FR-303**: An interrupted or unexpectedly failed filing MUST release any claim number it
@@ -195,14 +209,15 @@ and every file it links exists.
   running (`claim-support`, `--load-samples`, `--trace`), the four menu options, the safety
   guarantees, testing (unit and live), project structure, the SDD/TDD process, and links to specs,
   the constitution, the UX walkthrough, the scenarios, and prompt history.
-- **FR-311**: An architecture diagram MUST exist and be linked from the README.
+- **FR-311**: A Mermaid architecture diagram MUST exist in `docs/architecture.md`, with a summary
+  version embedded in and linked from the README.
 - **FR-312**: `docs/samples/` MUST contain curated, fictional sample replies and reports per
   AC-12.4.
 
 ### Key Entities
 
 - **Trace Block**: a sanitized, structured summary of one flow's steps, derived only from existing
-  contracts. It is printed, never stored. [Storage: see Clarifications]
+  contracts. It is printed to the terminal only, never stored.
 - **Sample Output**: a committed markdown file pairing a customer reply with the matching staff
   report.
 
@@ -230,5 +245,7 @@ and every file it links exists.
 - **Trace audience:** trace mode is for staff and reviewers running the app locally; it has no
   authentication, consistent with the rest of the product.
 - **Sample outputs** are captured from real-model runs in a scratch folder, then reviewed and
-  committed. They are fictional, like all scenario data.
+  committed (clarify Q4). They are fictional, like all scenario data.
+- **Ctrl+C exit code:** 130, the conventional code for an interrupted program (AC-9.3's
+  "non-zero").
 - **README** replaces the placeholder README from the initial commit.
