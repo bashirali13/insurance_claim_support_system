@@ -275,7 +275,7 @@ routing, the help record, the reply, and the claim history.
 - [X] T036 [P] Create the fictional fixtures `tests/fixtures/narratives/update_cases.json` (≥ 12:
   saved facts + update text + expected changed fields; seeded from E04–E07) and `help_cases.json`
   (≥ 14: text + expected categories; seeded from E08–E12, with ≥ 2 per category).
-- [ ] T037 Add to `tests/live/test_live_eval.py`: SC-203 (update-mode accuracy ≥ 90%) and SC-204
+- [X] T037 Add to `tests/live/test_live_eval.py`: SC-203 (update-mode accuracy ≥ 90%) and SC-204
   (triage accuracy ≥ 90%), then run them against OpenRouter. Record the results and any prompt
   adjustments, using prompt examples that never come from fixtures.
 - [X] T038 [P] Update `docs/customer-scenarios.md` E01–E12 to the sample claim numbers, and update
