@@ -27,7 +27,7 @@ when a test needs them.
 
 ## Phase 1: Setup
 
-- [ ] T001 Add `data/claims/` and `data/help/` to `.gitignore` (FR-204a). This is configuration,
+- [X] T001 Add `data/claims/` and `data/help/` to `.gitignore` (FR-204a). This is configuration,
   verified by quickstart §2 (`git check-ignore`), so no unit test is needed.
 
 ---

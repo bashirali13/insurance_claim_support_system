@@ -232,3 +232,7 @@ logs/
 Thumbs.db
 *.tmp
 *.swp
+
+# Runtime claim and help records (FR-204a in specs/002); samples in data/samples/ stay committed
+data/claims/
+data/help/
