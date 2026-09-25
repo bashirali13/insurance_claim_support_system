@@ -224,7 +224,7 @@ The contact-change history detail is fixed.
 
 - [X] T025 [P] Update `docs/user-experience.md` §10 (trace built, terminal-only) and `CLAUDE.md`
   Commands (`--load-samples`, `--trace`).
-- [ ] T026 Run the final `uv run ruff format .`, `uv run ruff check .`, full `uv run pytest`, and
+- [X] T026 Run the final `uv run ruff format .`, `uv run ruff check .`, full `uv run pytest`, and
   the SC-306 AC coverage check.
 - [ ] T027 Write `docs/prompt-history/08-implementation-003.md`, push, run quickstart Q-12.3
   (Mermaid renders on GitHub), open the phase PR with `gh`, present the phase-completion check,
