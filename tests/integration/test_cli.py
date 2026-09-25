@@ -1,9 +1,13 @@
-"""US5: the terminal menu and filing flow (contracts/cli.md), with scripted keyboard input."""
+"""US5-US8: the terminal menu and flows (contracts/cli.md), with scripted keyboard input."""
 
 import pytest
 
 from claim_intake import cli
+from claim_intake.agents import create_agents
 from claim_intake.contracts import ProcessingStatus, TaskResult
+from claim_intake.orchestration import Deps
+from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples
+from tests.conftest import failing_model
 
 HEADER = " Northstar Auto Insurance: Claim Support"
 MENU_OPTIONS = [
@@ -44,9 +48,26 @@ def filed(monkeypatch):
     return narratives
 
 
-def run_app(capsys) -> tuple[int, str]:
-    code = cli.run(deps=None)
+def run_app(capsys, deps=None) -> tuple[int, str]:
+    code = cli.run(deps=deps)
     return code, capsys.readouterr().out
+
+
+@pytest.fixture
+def sample_deps(workdirs, fixed_now):
+    """Sample claims loaded into a temp folder; any model call would fail loudly."""
+    load_samples(workdirs)
+    return Deps(
+        agents=create_agents(failing_model(AssertionError("no model call expected"))),
+        store=ClaimStore(workdirs),
+        reports=ReportWriter(workdirs),
+        events=EventLog(workdirs),
+        now=lambda: fixed_now,
+    )
+
+
+def snapshot(root) -> dict:
+    return {p: p.read_bytes() for p in sorted(root.rglob("*")) if p.is_file()}
 
 
 def test_ac_5_1_menu_shows_header_notice_and_five_options(keyboard, capsys):
@@ -60,8 +81,8 @@ def test_ac_5_1_menu_shows_header_notice_and_five_options(keyboard, capsys):
         assert option in out
 
 
-@pytest.mark.parametrize("choice", ["2", "3", "4"])
-def test_ac_5_1_options_2_to_4_say_coming_soon(choice, keyboard, capsys):
+@pytest.mark.parametrize("choice", ["3", "4"])
+def test_ac_5_1_options_3_and_4_say_coming_soon(choice, keyboard, capsys):
     keyboard(choice, "5")
 
     _, out = run_app(capsys)
@@ -114,7 +135,7 @@ def test_ac_5_7_missing_config_exits_1_without_menu(monkeypatch, capsys):
     monkeypatch.delenv("MODEL_NAME", raising=False)
     monkeypatch.setattr(cli, "load_dotenv", lambda: None)
 
-    code = cli.main()
+    code = cli.main([])
 
     out = capsys.readouterr().out
     assert code == 1
@@ -129,3 +150,63 @@ def test_ac_5_12_exit_says_goodbye_and_exits_0(keyboard, capsys):
 
     assert code == 0
     assert "Thank you for contacting Northstar Auto Insurance. Goodbye." in out
+
+
+# --- US6: option 2 and sample claims ------------------------------------------------------
+
+
+def test_ac_6_1_option_2_prints_status_for_sample_claim(keyboard, sample_deps, capsys):
+    keyboard("2", "clm-2026-0005", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert "Claim CLM-2026-0005: Collision (filed Sep 23, 2026)" in out
+    assert "Next step:   A claims adjuster will contact you by Friday, Sep 25." in out
+
+
+def test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu(
+    keyboard, sample_deps, workdirs, capsys
+):
+    before = snapshot(workdirs)
+    keyboard("2", "clm 2026 5", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert "Claim numbers look like CLM-2026-0007. Please try again." in out
+    assert out.count(HEADER) == 2
+    assert snapshot(workdirs) == before  # FR-219: no report or event-log line
+
+
+def test_ac_6_4_unknown_claim_number_message(keyboard, sample_deps, capsys):
+    keyboard("2", "CLM-2026-9999", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert "We couldn't find that claim number. Please check it and try again." in out
+
+
+def test_ac_6_8_status_check_calls_no_model_and_writes_nothing(
+    keyboard, sample_deps, workdirs, capsys
+):
+    before = snapshot(workdirs)
+    keyboard("2", "CLM-2026-0002", "5")
+
+    run_app(capsys, sample_deps)
+
+    assert snapshot(workdirs) == before
+
+
+def test_ac_6_9_load_samples_flag_reports_count_then_shows_menu(
+    keyboard, workdirs, monkeypatch, capsys
+):
+    monkeypatch.chdir(workdirs)
+    monkeypatch.setenv("OPENROUTER_API_KEY", "sk-test")
+    monkeypatch.setenv("MODEL_NAME", "test/model")
+    monkeypatch.setattr(cli, "load_dotenv", lambda: None)
+    keyboard("5")
+
+    code = cli.main(["--load-samples"])
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert out.index("Loaded 6 sample claims.") < out.index(HEADER)

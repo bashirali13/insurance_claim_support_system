@@ -58,7 +58,7 @@ is involved.
 
 ### Tests for User Story 6 (write first; they must fail)
 
-- [ ] T004 [P] [US6] Write `tests/unit/test_status.py`:
+- [X] T004 [P] [US6] Write `tests/unit/test_status.py`:
   - `test_ac_6_2_claim_number_is_trimmed_and_uppercased`
   - `test_ac_6_3_malformed_claim_numbers_are_rejected` (parametrized: `clm 2026 5`,
     `CLM-26-5`, `CLM-2026-00051`)
@@ -68,12 +68,12 @@ is involved.
   - `test_ac_6_6_privacy_review_claim_shows_no_incident_or_facts`
   - `test_ac_6_7_no_follow_up_promise_when_date_passed_or_closed`
   - `test_ac_6_1_phase_001_record_without_new_fields_still_loads`
-- [ ] T005 [P] [US6] Write `tests/unit/test_samples.py`:
+- [X] T005 [P] [US6] Write `tests/unit/test_samples.py`:
   - `test_ac_6_9_six_samples_are_valid_claim_records_covering_every_status`
   - `test_ac_6_9_samples_contain_no_personal_information` (`find_pii` on each file is empty)
   - `test_ac_6_9_loading_copies_missing_samples_without_overwriting`
   - `test_ac_6_9_next_claim_after_loading_is_0007`
-- [ ] T006 [P] [US6] In `tests/integration/test_cli.py`:
+- [X] T006 [P] [US6] In `tests/integration/test_cli.py`:
   - **replace** `test_ac_5_1_options_2_to_4_say_coming_soon` with
     `test_ac_5_1_options_3_and_4_say_coming_soon` (option 2 now works, FR-220; options 3 and 4
     are replaced in T016/T021 and T028/T034)
