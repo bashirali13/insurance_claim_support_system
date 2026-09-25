@@ -21,6 +21,8 @@ uv run pytest -k ac_2_3      # tests for one acceptance criterion
 uv run ruff check .          # lint
 uv run ruff format .         # format
 uv run claim-support         # run the terminal app (needs .env)
+uv run claim-support --load-samples  # also load the six sample claims
+uv run claim-support --trace         # show a sanitized staff trace after each reply
 ```
 
 Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`. Never commit `.env`.
