@@ -183,7 +183,7 @@ The contact-change history detail is fixed.
 
 ### Tests (write first; they must fail)
 
-- [ ] T020 [US12] Write `tests/unit/test_docs.py`:
+- [X] T020 [US12] Write `tests/unit/test_docs.py`:
   - `test_ac_12_2_readme_relative_links_resolve`
   - `test_ac_12_2_readme_cli_flags_are_real_options` (every `claim-support --x` in the README is
     an `argparse` option)
