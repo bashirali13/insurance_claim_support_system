@@ -87,7 +87,7 @@ is involved.
 
 ### Implementation for User Story 6
 
-- [ ] T007 [US6] In `src/claim_intake/contracts.py`:
+- [X] T007 [US6] In `src/claim_intake/contracts.py`:
   - `ClaimStatus` + `UNDER_REVIEW`, `CLOSED`; `Team` + `POLICY_SERVICES`
   - `HistoryEntry.event` + `"DETAILS_UPDATED"`, `"HELP_REQUESTED"`, and
     `detail: str | None = None`

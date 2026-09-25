@@ -174,6 +174,7 @@ class Team(StrEnum):
     CUSTOMER_RELATIONS = "CUSTOMER_RELATIONS"
     SPECIAL_REVIEW = "SPECIAL_REVIEW"
     PRIVACY_REVIEW = "PRIVACY_REVIEW"
+    POLICY_SERVICES = "POLICY_SERVICES"
 
 
 class RiskLlmOutput(Contract):
@@ -239,12 +240,32 @@ class PipelineStep(StrEnum):
 class ClaimStatus(StrEnum):
     SUBMITTED = "SUBMITTED"
     AWAITING_INFORMATION = "AWAITING_INFORMATION"
+    UNDER_REVIEW = "UNDER_REVIEW"  # set by staff (sample data in this phase)
     ESCALATED = "ESCALATED"
+    CLOSED = "CLOSED"  # set by staff (sample data in this phase)
 
 
 class HistoryEntry(Contract):
     at: datetime
-    event: Literal["FILED", "PRIVACY_REVIEW_OPENED"]
+    event: Literal["FILED", "PRIVACY_REVIEW_OPENED", "DETAILS_UPDATED", "HELP_REQUESTED"]
+    detail: str | None = None  # changed field names or a help reference; never values
+
+
+SensitiveField = Literal[
+    "incident_type",
+    "um_uim_subtype",
+    "customer_side_injured",
+    "others_injured",
+    "other_party_involved",
+]
+
+
+class PendingChange(Contract):
+    """A sensitive correction held until an adjuster confirms it (FR-209)."""
+
+    field: SensitiveField
+    requested_value: str
+    requested_at: datetime
 
 
 class ClaimRecord(Contract):
@@ -257,6 +278,7 @@ class ClaimRecord(Contract):
     teams: list[Team]
     follow_up_date: date
     history: list[HistoryEntry] = Field(min_length=1)
+    pending_changes: list[PendingChange] = []
 
 
 class TaskResult(Contract):

@@ -1,5 +1,7 @@
 """Fixed business rules (data-model.md). Deterministic, no model calls."""
 
+import re
+
 from claim_intake.contracts import (
     AssessmentLlmOutput,
     ClaimAssessment,
@@ -180,3 +182,14 @@ def initial_status(
     if missing:
         return ClaimStatus.AWAITING_INFORMATION
     return ClaimStatus.SUBMITTED
+
+
+# --- Claim numbers (FR-201) ------------------------------------------------------------------
+
+CLAIM_NUMBER = re.compile(r"^CLM-\d{4}-\d{4}$")
+
+
+def normalize_claim_number(text: str) -> str | None:
+    """Trim and uppercase; None unless it looks like CLM-2026-0007."""
+    candidate = text.strip().upper()
+    return candidate if CLAIM_NUMBER.match(candidate) else None
