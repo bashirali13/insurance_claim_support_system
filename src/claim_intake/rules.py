@@ -10,8 +10,10 @@ from claim_intake.contracts import (
     CoverageLine,
     FactChanges,
     FieldChange,
+    HelpTriageLlmOutput,
     IncidentType,
     MissingItem,
+    RequestCategory,
     RiskIndicator,
     RiskLevel,
     RiskLlmOutput,
@@ -289,3 +291,39 @@ def status_after_update(
 def earliest_follow_up(today: date, business_days: list[int]) -> date:
     """The claim's single follow-up date is its earliest promise."""
     return min(add_business_days(today, days) for days in business_days)
+
+
+# --- Get help routing (specs/002 FR-213) --------------------------------------------------------
+
+HELP_TEAM_FOR = {
+    RequestCategory.COMPLAINT: (Team.CUSTOMER_RELATIONS, 2),
+    RequestCategory.SERVICE_DELAY: (Team.CUSTOMER_RELATIONS, 2),
+    RequestCategory.CLAIM_QUESTION: (Team.CLAIMS_ADJUSTER, 2),
+    RequestCategory.SPEAK_TO_ADJUSTER: (Team.CLAIMS_ADJUSTER, 2),
+    RequestCategory.CONTACT_CHANGE: (Team.POLICY_SERVICES, 3),
+    # FILE_A_CLAIM and OUT_OF_SCOPE route nobody: the reply points elsewhere.
+}
+
+
+def help_routing(triage: HelpTriageLlmOutput, text: str) -> list[tuple[Team, int]]:
+    """Teams and business days for a help request, one entry per team, in Team order."""
+    days_for: dict[Team, int] = {}
+
+    def route(team: Team, days: int) -> None:
+        days_for[team] = min(days, days_for.get(team, days))
+
+    for category in triage.categories:
+        if category in HELP_TEAM_FOR:
+            route(*HELP_TEAM_FOR[category])
+    if triage.sentiment in UPSET:
+        route(Team.CUSTOMER_RELATIONS, 2)
+    flagged = (
+        triage.legal_representation_mentioned
+        or triage.possible_prompt_injection
+        or has_injection_phrase(text)
+    )
+    if flagged:
+        route(Team.CLAIMS_ADJUSTER, 1)
+        route(Team.SPECIAL_REVIEW, 1)
+        days_for = dict.fromkeys(days_for, 1)
+    return [(team, days_for[team]) for team in Team if team in days_for]

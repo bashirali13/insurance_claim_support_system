@@ -247,7 +247,7 @@ routing, the help record, the reply, and the claim history.
 
 ### Implementation for User Story 8
 
-- [ ] T029 [US8] In contracts: `RequestCategory`, `HelpTriageLlmOutput` ("categories 1–3",
+- [X] T029 [US8] In contracts: `RequestCategory`, `HelpTriageLlmOutput` ("categories 1–3",
   "rationale 1–300"), `HelpReplyLlmOutput`, `TeamPromise`, and `HelpRecord` (help_id
   `^HELP-\d{4}-\d{4}$`; sentiment and categories empty only for privacy review). In rules:
   `help_routing(triage, text)`.

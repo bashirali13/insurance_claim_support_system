@@ -335,3 +335,50 @@ class FactChanges(Contract):
     @property
     def is_empty(self) -> bool:
         return not (self.added or self.corrected or self.sensitive)
+
+
+# --- Get help (specs/002 US8) ------------------------------------------------------------------
+
+
+class RequestCategory(StrEnum):
+    COMPLAINT = "COMPLAINT"
+    SERVICE_DELAY = "SERVICE_DELAY"
+    CLAIM_QUESTION = "CLAIM_QUESTION"
+    SPEAK_TO_ADJUSTER = "SPEAK_TO_ADJUSTER"
+    CONTACT_CHANGE = "CONTACT_CHANGE"
+    FILE_A_CLAIM = "FILE_A_CLAIM"
+    OUT_OF_SCOPE = "OUT_OF_SCOPE"
+
+
+class HelpTriageLlmOutput(Contract):
+    """What the help-triage model may judge. Teams and dates are decided by rules."""
+
+    sentiment: Sentiment
+    categories: list[RequestCategory] = Field(min_length=1, max_length=3)
+    legal_representation_mentioned: bool
+    possible_prompt_injection: bool
+    rationale: str = Field(min_length=1, max_length=300)
+
+
+class HelpReplyLlmOutput(Contract):
+    """The only help-reply text the model writes; checked before use."""
+
+    opening_line: str
+
+
+class TeamPromise(Contract):
+    team: Team
+    business_days: int
+    follow_up_date: date
+
+
+class HelpRecord(Contract):
+    """Saved as data/help/<help_id>.json. Never contains the request text or personal values."""
+
+    help_id: str = Field(pattern=r"^HELP-\d{4}-\d{4}$")
+    claim_id: str | None
+    filed_at: datetime
+    sentiment: Sentiment | None  # None only for privacy review (AC-8.12)
+    categories: list[RequestCategory]  # empty only for privacy review
+    routed: list[TeamPromise] = Field(min_length=1)
+    history: list[HistoryEntry] = Field(min_length=1)
