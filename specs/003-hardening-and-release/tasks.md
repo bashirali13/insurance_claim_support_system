@@ -98,11 +98,11 @@ tested as pure formatting; the CLI prints it only with the flag.
 
 ### Tests (write first; they must fail)
 
-- [ ] T006 [P] [US10] Write `tests/unit/test_trace.py`:
+- [X] T006 [P] [US10] Write `tests/unit/test_trace.py`:
   - `test_ac_10_1_render_trace_matches_block_format` (the exact block from data-model.md)
   - `test_ac_10_3_failed_entry_shows_step_and_error_category`
   - `test_ac_10_4_trace_is_withheld_when_privacy_check_fails`
-- [ ] T007 [P] [US10] Write `tests/integration/test_trace_flows.py`:
+- [X] T007 [P] [US10] Write `tests/integration/test_trace_flows.py`:
   - `test_ac_10_1_filing_trace_has_intake_assessment_risk_saved` (values for S10:
     `PERSON, PHONE`, `COLLISION`, `HIGH`, `2026-09-25`, …)
   - `test_ac_10_2_update_trace_lists_added_corrected_pending_fields`
@@ -112,7 +112,7 @@ tested as pure formatting; the CLI prints it only with the flag.
     help)
   - `test_ac_10_4_trace_has_no_narrative_prose_or_personal_values` (parametrized over the flows;
     narrative words, the model opening line, the rationale, and secret values are all absent)
-- [ ] T008 [P] [US10] Append to `tests/integration/test_cli.py`:
+- [X] T008 [P] [US10] Append to `tests/integration/test_cli.py`:
   - `test_ac_10_1_trace_flag_prints_block_after_reply`
   - `test_ac_10_5_no_trace_printed_without_flag`
   - `test_ac_10_5_trace_is_never_written_to_disk` (no file under `workdirs` contains

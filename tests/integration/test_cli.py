@@ -5,8 +5,10 @@ from datetime import date
 import pytest
 
 from claim_intake import cli
-from claim_intake.contracts import ProcessingStatus, TaskResult
-from tests.integration.conftest import HEADER, snapshot
+from claim_intake.contracts import IntakeLlmOutput, ProcessingStatus, TaskResult, TraceEntry
+from tests.builders import assessment_output, risk_output, summary_output
+from tests.conftest import structured_model
+from tests.integration.conftest import HEADER, make_deps, snapshot
 
 MENU_OPTIONS = [
     " 1. File a new claim",
@@ -289,3 +291,54 @@ def test_ac_8_1_option_4_flow_prints_help_reply(keyboard, sample_deps, helped, c
 
     assert "(help reply)" in out
     assert "coming soon" not in out
+
+
+# --- US10: --trace --------------------------------------------------------------------------
+
+
+@pytest.fixture
+def traced_filing(monkeypatch):
+    """A filing result carrying one trace entry, so CLI tests only check printing."""
+
+    def fake_file_claim(text, deps, on_progress=None):
+        return TaskResult(
+            processing_status=ProcessingStatus.COMPLETED,
+            claim_id="CLM-2026-0001",
+            customer_message="(reply)",
+            report_path=None,
+            trace=[TraceEntry(step="saved", values={"claim": "CLM-2026-0001"})],
+        )
+
+    monkeypatch.setattr(cli, "file_claim", fake_file_claim)
+
+
+def test_ac_10_1_trace_flag_prints_block_after_reply(keyboard, traced_filing, capsys):
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(None, trace=True)
+
+    out = capsys.readouterr().out
+    assert out.index("(reply)") < out.index("└ trace ─ saved")
+    assert "claim: CLM-2026-0001" in out
+
+
+def test_ac_10_5_no_trace_printed_without_flag(keyboard, traced_filing, capsys):
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(None)
+
+    assert "trace ─" not in capsys.readouterr().out
+
+
+def test_ac_10_5_trace_is_never_written_to_disk(keyboard, workdirs, fixed_now, capsys):
+    model = structured_model(
+        IntakeLlmOutput(suggestions=[]), assessment_output(), risk_output(), summary_output()
+    )
+    keyboard("1", "Hail dented my hood.", "", "5")
+
+    cli.safe_run(make_deps(workdirs, fixed_now, model), trace=True)
+
+    assert "trace ─" in capsys.readouterr().out
+    for path in workdirs.rglob("*"):
+        if path.is_file():
+            assert "trace ─" not in path.read_text(encoding="utf-8")
