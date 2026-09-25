@@ -27,6 +27,7 @@ guarantees hold together; and the project is documented for a reader who has nev
 - Q: Where does `--trace` output go? → A: Terminal only; it is printed after each reply and never written to disk.
 - Q: What format should the architecture diagram use? → A: Mermaid in `docs/architecture.md`, with a short summary version embedded in the README.
 - Q: Should committed samples come from real-model or scripted runs? → A: Real-model runs, reviewed and committed; a test checks each sample is free of personal values and has the required sections, without comparing exact wording.
+- Plan-time consistency fix: AC-9.1's status-only report does not apply to status checks (option 2), which phase 002 AC-6.8 keeps write-free.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -51,7 +52,9 @@ traceback.
    validation, or storage failure), **When** it happens, **Then** the customer sees "Something went
    wrong on our side. Please try again later." with no technical detail, the app returns to the
    menu, and a status-only report is written with status `FAILED_UNEXPECTED` and the exception's
-   class name as its error category. The next menu choice works normally.
+   class name as its error category. The next menu choice works normally. *(Exception: a status
+   check, option 2, writes no report, because phase 002 AC-6.8 guarantees status checks never
+   change any file.)*
 2. **AC-9.2**: **Given** the customer's input ends unexpectedly (end-of-file) at any prompt, **When**
    it happens, **Then** the app prints the goodbye message and exits with code 0, with no traceback.
 3. **AC-9.3**: **Given** the customer presses Ctrl+C at any prompt or while a claim is being
