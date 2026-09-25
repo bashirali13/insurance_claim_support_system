@@ -311,20 +311,22 @@ see E10). Option 1 doesn't pre-screen for non-claims in this phase.
 
 ---
 
-## Phase 002 Draft: Existing-Claim Support
+## Phase 002: Existing-Claim Support
 
-These are not yet specified. They're input for `/speckit-specify` in phase 002. They assume the
-seeded sample claims exist (e.g., `CLM-2026-0007` from S10).
+Specified in `specs/002-existing-claim-support/`. Load the sample claims first
+(`uv run claim-support --load-samples`). `CLM-2026-0005` is scenario S10 (the hit-and-run with
+injury). The live evaluation extends E04–E12 in `tests/fixtures/narratives/update_cases.json` and
+`help_cases.json`.
 
 | ID | Menu option | Customer types | Should happen |
 |---|---|---|---|
-| E01 | 2 Check status | `CLM-2026-0007` | status, filing date, last update, still-needed list; no model call |
+| E01 | 2 Check status | `CLM-2026-0005` | status, filing date, last update, still-needed list; no model call |
 | E02 | 2 Check status | `CLM-2026-9999` | "We couldn't find that claim number…", which doesn't reveal whether other IDs exist |
 | E03 | 2 Check status | `clm 2026 7` | format hint, re-prompt |
 | E04 | 3 Add details | "The police report number is 26-44817." | Added: police report; the missing list shrinks; history entry |
 | E05 | 3 Add details | "It was actually around 7pm, not 6pm." | Corrected: incident time (6pm → 7pm) |
 | E06 | 3 Add details | "My new phone number is 555-908-1200." | not stored; routed to Policy Services, Tue Sep 29 |
-| E07 | 3 Add details | "Actually nobody was hurt." (after S10) | contradiction with the original claim; adjuster confirms the change; 1 business day |
+| E07 | 3 Add details | "Actually nobody was hurt." (after S10) | sensitive correction: held as a pending change (the saved injury stays), an adjuster confirms within 1 business day, and option 2 shows "Waiting for an adjuster to confirm" |
 | E08 | 4 Get help | "It's been a week and nobody called me back. I'm really frustrated." | `SERVICE_DELAY`, Customer Relations, Mon Sep 28 |
 | E09 | 4 Get help | "I'd like to speak to my adjuster about the repair estimate." | `SPEAK_TO_ADJUSTER`, Claims Adjuster |
 | E10 | 4 Get help | "Can I get a rental car?" | `OUT_OF_SCOPE`: a polite redirect, no team |

@@ -278,7 +278,7 @@ routing, the help record, the reply, and the claim history.
 - [ ] T037 Add to `tests/live/test_live_eval.py`: SC-203 (update-mode accuracy ≥ 90%) and SC-204
   (triage accuracy ≥ 90%), then run them against OpenRouter. Record the results and any prompt
   adjustments, using prompt examples that never come from fixtures.
-- [ ] T038 [P] Update `docs/customer-scenarios.md` E01–E12 to the sample claim numbers, and update
+- [X] T038 [P] Update `docs/customer-scenarios.md` E01–E12 to the sample claim numbers, and update
   `docs/user-experience.md` §5–7 if any wording changed.
 - [ ] T039 Run the `specs/002-existing-claim-support/quickstart.md` validation:
   - SC-206 AC coverage

@@ -59,7 +59,7 @@ The customer always hears *when* a person will follow up. The timeframes are rea
 |---|---|
 | Injury reported, or an urgent escalation | A claims adjuster contacts you **by <1 business day>** |
 | Standard new claim | A claims adjuster contacts you **by <2 business days>** |
-| Update with a contradiction to confirm | An adjuster confirms the change **by <2 business days>** |
+| Update that corrects a sensitive fact | An adjuster confirms the change **by <1 business day>** |
 | Complaint or service delay | Customer Relations contacts you **by <2 business days>** |
 | Contact-information change | Policy Services confirms the change **by <3 business days>** |
 | Manual privacy review | A specialist reviews your submission **by <3 business days>** |
@@ -206,13 +206,17 @@ Still needed:
 
 **Behind the scenes:**
 - The intake agent scrubs the new phone number, and the contact-change request is flagged.
-- The assessment agent runs in **update mode**. It gets the new sanitized text plus the existing
-  record, and returns new facts, corrections, and contradictions.
-- If a correction conflicts sharply (e.g., "no one was hurt" after reporting an injury), the reply
-  says *"An adjuster will confirm this change with you by <date>,"* and the contradiction is
-  flagged.
-- Rules re-run the risk and routing checks.
-- An entry is appended to the claim's `history` and the missing-info list is updated.
+- The assessment agent runs in **update mode**. It gets the new sanitized text plus the saved
+  facts and returns the full updated facts. **Code**, not the model, compares them field by field
+  to decide what was added, corrected, or sensitive.
+- A correction to a sensitive fact (e.g., "no one was hurt" after reporting an injury) is **held**:
+  the saved value stays, the change is recorded as pending, and the reply says *"An adjuster will
+  confirm this change with you by <1 business day>."* Newly *added* facts, such as a newly reported
+  injury, apply immediately.
+- Rules re-run the risk and routing checks, and the claim's teams and follow-up date are replaced
+  by the new result. An `ESCALATED` claim stays escalated.
+- An entry naming the changed fields (never values) is appended to the claim's `history`, and
+  the missing-info list is updated.
 
 ---
 
