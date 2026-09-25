@@ -170,7 +170,7 @@ def update_claim(
                 HistoryEntry(
                     at=run.filed_at,
                     event="DETAILS_UPDATED",
-                    detail=", ".join(changed_fields) or None,
+                    detail=", ".join(changed_fields) or "contact change requested",
                 ),
             ],
             pending_changes=[*record.pending_changes, *pending],
