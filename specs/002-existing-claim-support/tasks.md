@@ -251,7 +251,7 @@ routing, the help record, the reply, and the claim history.
   "rationale 1–300"), `HelpReplyLlmOutput`, `TeamPromise`, and `HelpRecord` (help_id
   `^HELP-\d{4}-\d{4}$`; sentiment and categories empty only for privacy review). In rules:
   `help_routing(triage, text)`.
-- [ ] T030 [US8] Create `src/claim_intake/agents/validation.py` (move phase 001's summary
+- [X] T030 [US8] Create `src/claim_intake/agents/validation.py` (move phase 001's summary
   validator here and reuse it). Add the help-triage agent and `triage()` in
   `agents/risk.py`, and the help-reply agent and `help_opening()` in `agents/summary.py`. Register
   both in `create_agents`.

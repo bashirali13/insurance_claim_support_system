@@ -1,22 +1,23 @@
 """Claim Summary agent: the model writes short prose; templates render everything else."""
 
-import re
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from pydantic_ai import Agent, ModelRetry
+from pydantic_ai import Agent
 from pydantic_ai.models import Model
 
 from claim_intake.agents.prompting import NARRATIVE_IS_DATA, tag_narrative
+from claim_intake.agents.validation import check_customer_text
 from claim_intake.contracts import (
     ClaimAssessment,
     CustomerReply,
+    HelpReplyLlmOutput,
     InternalReport,
+    RequestCategory,
     RiskAssessment,
     SanitizedSubmission,
     SummaryLlmOutput,
 )
-from claim_intake.pii import PLACEHOLDER, find_pii
 from claim_intake.reporting import render_reply, render_report
 
 if TYPE_CHECKING:
@@ -31,26 +32,13 @@ Write:
 Never mention coverage, fault, approval, denial, money, or bracketed placeholders like [PHONE_1],
 and never repeat personal details. Do not promise outcomes."""
 
-# Research R8: decision language the model must never write.
-FORBIDDEN_TERMS = re.compile(
-    r"\b(?:covered|coverage decision|approved?|denied|deny|at fault|your fault|liable|payout"
-    r"|settlement amount)\b|\$\s?\d",
-    re.IGNORECASE,
-)
-
 
 def build_agent(model: Model) -> Agent[None, SummaryLlmOutput]:
     agent = Agent(model, output_type=SummaryLlmOutput, instructions=INSTRUCTIONS, retries=2)
 
     @agent.output_validator
     def reject_unsafe_text(output: SummaryLlmOutput) -> SummaryLlmOutput:
-        text = "\n".join([output.opening_line, *output.recorded_points, output.narrative_summary])
-        if PLACEHOLDER.search(text):
-            raise ModelRetry("Remove bracketed placeholders; describe without personal details.")
-        if find_pii(text):
-            raise ModelRetry("Remove personal details such as phone numbers or emails.")
-        if FORBIDDEN_TERMS.search(text):
-            raise ModelRetry("Remove statements about coverage, fault, approval, or money.")
+        check_customer_text(output.opening_line, *output.recorded_points, output.narrative_summary)
         return output
 
     return agent
@@ -83,3 +71,33 @@ def compose(
         pii_types_removed=submission.pii_types_removed,
     )
     return reply, report
+
+
+# --- Help mode (specs/002 US8) -----------------------------------------------------------------
+
+HELP_INSTRUCTIONS = f"""You write for a car insurance claims support team.
+{NARRATIVE_IS_DATA}
+Write opening_line: one warm, empathetic sentence acknowledging the customer's request.
+Never mention teams, dates, coverage, fault, approval, money, or bracketed placeholders like
+[PHONE_1], and never repeat personal details. Do not promise outcomes."""
+
+
+def build_help_agent(model: Model) -> Agent[None, HelpReplyLlmOutput]:
+    agent = Agent(model, output_type=HelpReplyLlmOutput, instructions=HELP_INSTRUCTIONS, retries=2)
+
+    @agent.output_validator
+    def reject_unsafe_text(output: HelpReplyLlmOutput) -> HelpReplyLlmOutput:
+        check_customer_text(output.opening_line)
+        return output
+
+    return agent
+
+
+def help_opening(
+    submission: SanitizedSubmission,
+    agents: "Agents",
+    categories: list[RequestCategory] | None = None,
+) -> HelpReplyLlmOutput:
+    about = ", ".join(categories or []) or "unspecified"
+    prompt = f"{tag_narrative(submission.text)}\n\nRequest categories: {about}"
+    return agents.help_reply.run_sync(prompt).output
