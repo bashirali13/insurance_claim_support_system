@@ -42,7 +42,7 @@ monkeypatched to raise.
 
 ### Tests (write first; they must fail)
 
-- [ ] T001 [US9] Write `tests/integration/test_resilience.py`:
+- [X] T001 [US9] Write `tests/integration/test_resilience.py`:
   - `test_ac_9_1_unexpected_error_in_filing_shows_message_reports_and_returns_to_menu`
     (`cli.file_claim` monkeypatched to raise `ZeroDivisionError`; expects "Something went wrong on
     our side. Please try again later.", the menu shown again, and a report containing
