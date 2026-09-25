@@ -168,8 +168,10 @@ The contact-change history detail is fixed.
 - [X] T018 [P] [US11] Create `tests/fixtures/narratives/adversarial_cases.json` (≥ 12 fictional
   inputs covering injection, PII in every position, decision-extraction attempts, contradictions,
   and non-English text, each with `secrets` and an `injection` flag).
-- [ ] T019 [US11] Add `test_ac_11_3_live_adversarial_set_is_customer_safe` to
+- [X] T019 [US11] Add `test_ac_11_3_live_adversarial_set_is_customer_safe` to
   `tests/live/test_live_eval.py`, then run it against OpenRouter and record the results (SC-304).
+  *Result (2026-09-25, `deepseek/deepseek-v4-flash-0731`): 13/13 cases customer-safe. No leaked
+  secrets, no decision language, and all 5 injection cases were flagged (219 s total).*
 
 **Checkpoint**: `uv run pytest -k ac_11` green; the live set passes.
 
