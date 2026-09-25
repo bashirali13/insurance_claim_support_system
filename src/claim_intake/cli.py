@@ -12,9 +12,9 @@ from dotenv import load_dotenv  # noqa: E402
 
 from claim_intake.agents import create_agents  # noqa: E402
 from claim_intake.config import ConfigError, build_model, load_settings  # noqa: E402
-from claim_intake.contracts import ClaimStatus  # noqa: E402
+from claim_intake.contracts import ClaimStatus, MenuTask  # noqa: E402
 from claim_intake.existing_claims import check_status, get_help, update_claim  # noqa: E402
-from claim_intake.orchestration import Deps, file_claim  # noqa: E402
+from claim_intake.orchestration import Deps, file_claim, record_unexpected  # noqa: E402
 from claim_intake.reporting import format_follow_up  # noqa: E402
 from claim_intake.rules import normalize_claim_number  # noqa: E402
 from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples  # noqa: E402
@@ -48,6 +48,9 @@ EMPTY_INPUT = "Please describe what happened, then press Enter on an empty line.
 TOO_LONG = "That's longer than we can accept here (limit 5,000 characters). Please shorten it."
 INVALID_CHOICE = "Please choose a number from 1 to 5."
 GOODBYE = "Thank you for contacting Northstar Auto Insurance. Goodbye."
+UNEXPECTED_MESSAGE = "Something went wrong on our side. Please try again later."
+INTERRUPTED_MESSAGE = "Stopped. Nothing further was sent."
+INTERRUPTED_EXIT_CODE = 130  # conventional exit code for an interrupted program
 CLAIM_NUMBER_PROMPT = "Enter your claim number (e.g. CLM-2026-0007): "
 OPTIONAL_CLAIM_NUMBER_PROMPT = "Enter your claim number (or press Enter if you don't have one): "
 SKIP_HINT = "Press Enter to continue without one."
@@ -136,31 +139,78 @@ def get_help_with_claim(deps: Deps) -> None:
     print()
 
 
+def file_new_claim(deps: Deps) -> None:
+    """Option 1."""
+    print()
+    result = file_claim(read_narrative(), deps, on_progress=print_progress)
+    print()
+    print(result.customer_message)
+    print()
+
+
+def show_status(deps: Deps) -> None:
+    """Option 2."""
+    if claim_id := ask_claim_number(deps):
+        print()
+        print(check_status(claim_id, deps.store, deps.now().date()))
+        print()
+
+
+def update_details(deps: Deps) -> None:
+    """Option 3."""
+    if claim_id := ask_claim_number(deps):
+        add_or_correct(deps, claim_id)
+
+
+# Menu choice → (action, task recorded on an unexpected error; None = write nothing, AC-6.8).
+MENU_ACTIONS = {
+    "1": (file_new_claim, MenuTask.FILE_CLAIM),
+    "2": (show_status, None),
+    "3": (update_details, MenuTask.UPDATE_DETAILS),
+    "4": (get_help_with_claim, MenuTask.GET_HELP),
+}
+
+
+def attempt(deps: Deps, action, task: MenuTask | None) -> None:
+    """Last-resort boundary (FR-301): a bug shows a fixed message and the menu comes back."""
+    try:
+        action(deps)
+    except EOFError:
+        raise  # the terminal closed: handled by safe_run as Exit
+    except Exception as exc:
+        print(UNEXPECTED_MESSAGE)
+        if task is not None:
+            try:
+                record_unexpected(deps, task, exc)
+            except Exception:
+                pass  # reporting must never turn a handled bug into a crash
+
+
 def run(deps: Deps) -> int:
     while True:
         print(MENU)
         choice = input("Choose an option (1-5): ").strip()
-        if choice == "1":
-            print()
-            result = file_claim(read_narrative(), deps, on_progress=print_progress)
-            print()
-            print(result.customer_message)
-            print()
-        elif choice == "2":
-            if claim_id := ask_claim_number(deps):
-                print()
-                print(check_status(claim_id, deps.store, deps.now().date()))
-                print()
-        elif choice == "3":
-            if claim_id := ask_claim_number(deps):
-                add_or_correct(deps, claim_id)
-        elif choice == "4":
-            get_help_with_claim(deps)
+        if choice in MENU_ACTIONS:
+            attempt(deps, *MENU_ACTIONS[choice])
         elif choice == "5":
             print(GOODBYE)
             return 0
         else:
             print(INVALID_CHOICE)
+
+
+def safe_run(deps: Deps) -> int:
+    """End of input exits cleanly (AC-9.2); Ctrl+C stops without a traceback (AC-9.3)."""
+    try:
+        return run(deps)
+    except EOFError:
+        print()
+        print(GOODBYE)
+        return 0
+    except KeyboardInterrupt:
+        print()
+        print(INTERRUPTED_MESSAGE)
+        return INTERRUPTED_EXIT_CODE
 
 
 def build_deps(root: Path) -> Deps:
@@ -188,4 +238,4 @@ def main(argv: list[str] | None = None) -> int:
         return 1
     if args.load_samples:
         print(f"Loaded {len(load_samples(Path.cwd()))} sample claims.")
-    return run(deps)
+    return safe_run(deps)

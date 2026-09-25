@@ -222,6 +222,7 @@ class ProcessingStatus(StrEnum):
     FAILED_MODEL_ERROR = "FAILED_MODEL_ERROR"
     FAILED_VALIDATION = "FAILED_VALIDATION"
     FAILED_OUTPUT = "FAILED_OUTPUT"
+    FAILED_UNEXPECTED = "FAILED_UNEXPECTED"  # constitution v1.1.0
 
 
 class PipelineStep(StrEnum):

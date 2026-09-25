@@ -373,6 +373,10 @@ def get_help(
             help_store.release(help_id)
         run.claim_id = claim_id
         return run.fail(failure)
+    except BaseException:  # an unexpected bug or Ctrl+C: never leave a reserved reference
+        if help_id:
+            help_store.release(help_id)
+        raise
 
     return TaskResult(
         processing_status=ProcessingStatus.COMPLETED,

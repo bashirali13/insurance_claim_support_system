@@ -67,15 +67,15 @@ monkeypatched to raise.
 
 ### Implementation
 
-- [ ] T002 [US9] In `src/claim_intake/contracts.py`, add `ProcessingStatus.FAILED_UNEXPECTED`. In
+- [X] T002 [US9] In `src/claim_intake/contracts.py`, add `ProcessingStatus.FAILED_UNEXPECTED`. In
   `src/claim_intake/orchestration.py`, add `record_unexpected(deps, task: MenuTask, exc)`, which
   writes a status-only report (claim `None`, failed step `None`, error category = the exception
   class name, task wording) and never prints.
-- [ ] T003 [US9] In `src/claim_intake/orchestration.py`, add `TaskRun.release_reservation()`.
+- [X] T003 [US9] In `src/claim_intake/orchestration.py`, add `TaskRun.release_reservation()`.
   `file_claim` releases on **any** exception that escapes it (`except BaseException: release;
   raise`), whether an unexpected bug or Ctrl+C (FR-303). In `src/claim_intake/existing_claims.py`,
   `get_help` does the same for a reserved help reference.
-- [ ] T004 [US9] In `src/claim_intake/cli.py`:
+- [X] T004 [US9] In `src/claim_intake/cli.py`:
   - a per-task `try/except Exception` boundary in `run()` (options 1, 3, and 4 call
     `record_unexpected`; option 2 writes nothing)
   - `safe_run(deps)`, which maps `EOFError` → goodbye, 0 and `KeyboardInterrupt` → "Stopped.

@@ -105,6 +105,12 @@ class TaskRun:
         self.task = task
         self.reserved = False
 
+    def release_reservation(self) -> None:
+        """Give back a claim number this run reserved (never an existing claim's)."""
+        if self.reserved:
+            self.deps.store.release(self.claim_id)
+            self.claim_id, self.reserved = None, False
+
     def reserve(self) -> str:
         if self.claim_id is None:
             self.claim_id = self.deps.store.reserve_claim_id(self.filed_at.year)
@@ -197,6 +203,20 @@ class TaskRun:
         return self.deps.reports.write(report, self.claim_id, self.filed_at)
 
 
+def record_unexpected(deps: Deps, task: MenuTask, exc: Exception) -> None:
+    """FR-301: a status-only report for a bug outside the known failure types. Never prints."""
+    now = deps.now()
+    report = render_status_only_report(
+        None,
+        now,
+        ProcessingStatus.FAILED_UNEXPECTED,
+        failed_step=None,
+        error_category=type(exc).__name__,
+        task=TASK_WORDING[task],
+    )
+    deps.reports.write(report, None, now)
+
+
 def is_private(*texts: str) -> bool:
     return not any(find_pii(text) for text in texts)
 
@@ -269,6 +289,9 @@ def file_claim(
         path = run.step(PipelineStep.SAVE, save)
     except StepFailed as failure:
         return run.fail(failure)
+    except BaseException:  # an unexpected bug or Ctrl+C: never leave a reserved number (FR-303)
+        run.release_reservation()
+        raise
 
     return TaskResult(
         processing_status=ProcessingStatus.COMPLETED,
