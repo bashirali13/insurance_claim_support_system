@@ -81,7 +81,7 @@ monkeypatched to raise.
   - `safe_run(deps)`, which maps `EOFError` → goodbye, 0 and `KeyboardInterrupt` → "Stopped.
     Nothing further was sent.", 130
   - `main()` calls `safe_run`
-- [ ] T005 [US9] Refactor pass, keeping the suite green.
+- [X] T005 [US9] Refactor pass, keeping the suite green.
 
 **Checkpoint**: `uv run pytest -k ac_9` green. `printf '2\n' | uv run claim-support` exits 0 with no
 traceback.

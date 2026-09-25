@@ -175,9 +175,7 @@ class TaskRun:
 
     def fail(self, failure: StepFailed) -> TaskResult:
         """No claim record survives a failure; a status-only report records what happened."""
-        if self.reserved:
-            self.deps.store.release(self.claim_id)
-            self.claim_id, self.reserved = None, False
+        self.release_reservation()
         try:
             path = str(
                 self.write_status_report(failure.status, failure.step, failure.error_category)
