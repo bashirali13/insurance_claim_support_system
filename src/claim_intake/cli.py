@@ -13,7 +13,7 @@ from dotenv import load_dotenv  # noqa: E402
 from claim_intake.agents import create_agents  # noqa: E402
 from claim_intake.config import ConfigError, build_model, load_settings  # noqa: E402
 from claim_intake.contracts import ClaimStatus  # noqa: E402
-from claim_intake.existing_claims import check_status, update_claim  # noqa: E402
+from claim_intake.existing_claims import check_status, get_help, update_claim  # noqa: E402
 from claim_intake.orchestration import Deps, file_claim  # noqa: E402
 from claim_intake.reporting import format_follow_up  # noqa: E402
 from claim_intake.rules import normalize_claim_number  # noqa: E402
@@ -46,10 +46,14 @@ CLOSED_CLAIM = (
 )
 EMPTY_INPUT = "Please describe what happened, then press Enter on an empty line."
 TOO_LONG = "That's longer than we can accept here (limit 5,000 characters). Please shorten it."
-COMING_SOON = "This option is coming soon."
 INVALID_CHOICE = "Please choose a number from 1 to 5."
 GOODBYE = "Thank you for contacting Northstar Auto Insurance. Goodbye."
 CLAIM_NUMBER_PROMPT = "Enter your claim number (e.g. CLM-2026-0007): "
+OPTIONAL_CLAIM_NUMBER_PROMPT = "Enter your claim number (or press Enter if you don't have one): "
+SKIP_HINT = "Press Enter to continue without one."
+HELP_PROMPT = """
+How can we help?
+Press Enter on an empty line when you're done."""
 BAD_CLAIM_NUMBER = "Claim numbers look like CLM-2026-0007. Please try again."
 UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try again."
 PROGRESS_WIDTH = 42
@@ -76,10 +80,13 @@ def read_narrative(prompt: str = FILING_PROMPT) -> str:
             return text
 
 
-def ask_claim_number(deps: Deps) -> str | None:
-    """Re-prompt until a claim number that exists is entered; an empty entry returns None."""
+def ask_claim_number(deps: Deps, optional: bool = False) -> str | None:
+    """Re-prompt until a claim number that exists is entered; an empty entry returns None.
+
+    Optional (Get help): the hints also say Enter skips the claim number (AC-8.11).
+    """
     while True:
-        entry = input(CLAIM_NUMBER_PROMPT)
+        entry = input(OPTIONAL_CLAIM_NUMBER_PROMPT if optional else CLAIM_NUMBER_PROMPT)
         if not entry.strip():
             return None
         claim_id = normalize_claim_number(entry)
@@ -89,6 +96,8 @@ def ask_claim_number(deps: Deps) -> str | None:
             print(UNKNOWN_CLAIM)
         else:
             return claim_id
+        if optional:
+            print(SKIP_HINT)
 
 
 def privacy_hold_message(follow_up, today) -> str:
@@ -116,6 +125,17 @@ def add_or_correct(deps: Deps, claim_id: str) -> None:
     print()
 
 
+def get_help_with_claim(deps: Deps) -> None:
+    """Option 4: the claim number is optional; only a real one is linked."""
+    claim_id = ask_claim_number(deps, optional=True)
+    print()
+    text = read_narrative(HELP_PROMPT)
+    result = get_help(claim_id, text, deps, on_progress=partial(print_progress, total=3))
+    print()
+    print(result.customer_message)
+    print()
+
+
 def run(deps: Deps) -> int:
     while True:
         print(MENU)
@@ -135,7 +155,7 @@ def run(deps: Deps) -> int:
             if claim_id := ask_claim_number(deps):
                 add_or_correct(deps, claim_id)
         elif choice == "4":
-            print(COMING_SOON)
+            get_help_with_claim(deps)
         elif choice == "5":
             print(GOODBYE)
             return 0

@@ -262,7 +262,7 @@ routing, the help record, the reply, and the claim history.
 - [X] T033 [US8] In `src/claim_intake/existing_claims.py`: `get_help(claim_id, raw_text, deps,
   on_progress)` (routed, redirect-only, privacy, failure, and claim-linking paths; `_Run` with
   task `GET_HELP`).
-- [ ] T034 [US8] In `src/claim_intake/cli.py`: option 4 with the optional claim-number prompt.
+- [X] T034 [US8] In `src/claim_intake/cli.py`: option 4 with the optional claim-number prompt.
   This removes the last "coming soon".
 - [ ] T035 [US8] Refactor pass (`existing_claims.py`, `cli.py`, agents), keeping the suite green.
 
