@@ -12,6 +12,7 @@ from claim_intake.contracts import (
     ClaimStatus,
     CustomerReply,
     FactChanges,
+    HelpTriageLlmOutput,
     IncidentType,
     InternalReport,
     MenuTask,
@@ -19,10 +20,12 @@ from claim_intake.contracts import (
     PiiType,
     PipelineStep,
     ProcessingStatus,
+    RequestCategory,
     RiskAssessment,
     SanitizedSubmission,
     SummaryLlmOutput,
     Team,
+    TeamPromise,
     TriState,
 )
 
@@ -157,7 +160,12 @@ def _list_section(title: str, items: list[str]) -> list[str]:
 
 FILE_CLAIM_TASK = "File a new claim"
 UPDATE_TASK = "Add or correct details"
-TASK_WORDING = {MenuTask.FILE_CLAIM: FILE_CLAIM_TASK, MenuTask.UPDATE_DETAILS: UPDATE_TASK}
+HELP_TASK = "Get help with my claim"
+TASK_WORDING = {
+    MenuTask.FILE_CLAIM: FILE_CLAIM_TASK,
+    MenuTask.UPDATE_DETAILS: UPDATE_TASK,
+    MenuTask.GET_HELP: HELP_TASK,
+}
 
 
 def _header(
@@ -347,4 +355,77 @@ def render_status_only_report(
         DECISION_NOTICE,
         "",
     ]
+    return InternalReport(markdown="\n".join(lines))
+
+
+# --- Get help (specs/002 US8, contracts/cli.md option 4) ----------------------------------------
+
+FILE_A_CLAIM_LINE = "To file a new claim, choose option 1 from the menu."
+OUT_OF_SCOPE_LINE = (
+    "I'm sorry, I can only help with claims here. For billing, policy changes, rentals, or "
+    "roadside help, please call Northstar Auto Insurance at the number on your insurance card."
+)
+EXTRA_LINES = {
+    RequestCategory.FILE_A_CLAIM: FILE_A_CLAIM_LINE,
+    RequestCategory.OUT_OF_SCOPE: OUT_OF_SCOPE_LINE,
+}
+
+
+def render_help_reply(
+    routed: list[TeamPromise],
+    categories: list[RequestCategory],
+    *,
+    opening: str | None,
+    help_id: str | None,
+) -> CustomerReply:
+    """Routed teams with dates, then any redirect lines, then the reference (FR-216)."""
+    lines = [opening] if opening else []
+    lines += _bullets(
+        [
+            f"{TEAM_ROLE[p.team]} will contact you by {format_follow_up(p.follow_up_date)}."
+            for p in routed
+            if p.team in TEAM_ROLE
+        ]
+    )
+    lines += [EXTRA_LINES[c] for c in categories if c in EXTRA_LINES]
+    if help_id:
+        lines.append(f"Reference: {help_id}")
+    return CustomerReply(text="\n".join(lines))
+
+
+def render_help_report(
+    help_id: str,
+    filed_at: datetime,
+    submission: SanitizedSubmission,
+    triage: HelpTriageLlmOutput,
+    routed: list[TeamPromise],
+    *,
+    claim_id: str | None,
+) -> InternalReport:
+    lines = [
+        f"# Claim Intake Report — {help_id}",
+        f"- **Processing status:** {ProcessingStatus.COMPLETED}",
+        f"- **Task:** {HELP_TASK}",
+        f"- **Claim:** {claim_id or NONE_RECORDED}",
+        f"- **Filed:** {filed_at:%Y-%m-%d %H:%M}",
+        "",
+        "## Request",
+        *[f"> {line}" for line in submission.text.splitlines()],
+    ]
+    lines += _list_section("Categories", [str(c) for c in triage.categories])
+    lines += [
+        "",
+        "## Sentiment",
+        f"- **Sentiment:** {triage.sentiment}",
+        f"- **Rationale:** {triage.rationale}",
+    ]
+    lines += _list_section(
+        "Routing and Follow-up",
+        [
+            f"{p.team}: by {p.follow_up_date.isoformat()} ({p.business_days} business day(s))"
+            for p in routed
+        ],
+    )
+    lines += _privacy_section(submission.pii_types_removed)
+    lines += ["", "---", DECISION_NOTICE, ""]
     return InternalReport(markdown="\n".join(lines))

@@ -257,7 +257,7 @@ routing, the help record, the reply, and the claim history.
   both in `create_agents`.
 - [X] T031 [US8] In `src/claim_intake/storage.py`: extract `NumberedFiles(dir, prefix)` from
   `ClaimStore` (phase 001 storage tests stay green) and add `HelpStore` (`data/help/`, `HELP`).
-- [ ] T032 [US8] In `src/claim_intake/reporting.py`: `render_help_reply` and
+- [X] T032 [US8] In `src/claim_intake/reporting.py`: `render_help_reply` and
   `render_help_report`.
 - [ ] T033 [US8] In `src/claim_intake/existing_claims.py`: `get_help(claim_id, raw_text, deps,
   on_progress)` (routed, redirect-only, privacy, failure, and claim-linking paths; `_Run` with
