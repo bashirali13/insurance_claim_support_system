@@ -13,7 +13,7 @@
 
 ## Requirement Completeness
 
-- [ ] No [NEEDS CLARIFICATION] markers remain
+- [x] No [NEEDS CLARIFICATION] markers remain
 - [x] Requirements are testable and unambiguous
 - [x] Success criteria are measurable
 - [x] Success criteria are technology-agnostic (no implementation details)
@@ -31,10 +31,6 @@
 
 ## Notes
 
-- Four decisions are deliberately deferred to `/speckit-clarify` (written as "see Clarifications"
-  in AC-6.9, AC-7.4, AC-8.11, and Edge Cases):
-  1. whether sensitive corrections are applied immediately or held for adjuster confirmation
-  2. how updates to a claim in privacy review are handled
-  3. how sample claims are loaded (and keeping runtime claim data out of git)
-  4. how Get help handles an unknown or malformed claim number
+- The four decisions deferred from `/speckit-specify` were resolved in `/speckit-clarify`
+  (session 2026-09-25), plus a fifth on team routing after updates. See the spec's Clarifications.
 - "AI model" and "agent" are role names; FR-207 and FR-212 name agent *modes*, not technology.
