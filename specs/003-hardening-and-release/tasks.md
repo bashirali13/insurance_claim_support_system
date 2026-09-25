@@ -128,7 +128,7 @@ tested as pure formatting; the CLI prints it only with the flag.
 - [X] T011 [US10] In `src/claim_intake/orchestration.py`: `TaskRun.trace` entries; `file_claim`
   appends intake, assessment, risk, and saved entries; `fail()` and the privacy path append a
   `failed` or `saved` entry; results carry `trace`.
-- [ ] T012 [US10] In `src/claim_intake/existing_claims.py`, add update and help entries (research R3
+- [X] T012 [US10] In `src/claim_intake/existing_claims.py`, add update and help entries (research R3
   table), including "no team routed".
 - [ ] T013 [US10] In `src/claim_intake/cli.py`, add the `--trace` flag and print
   `render_trace(result.trace)` after replies of options 1, 3, and 4.
