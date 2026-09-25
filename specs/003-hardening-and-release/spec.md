@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-25
 
-**Status**: Draft
+**Status**: Approved (2026-09-25)
 
 **Input**: User description: "Phase 003 of the Northstar Auto Insurance claim support system:
 harden the system and prepare it for release. The customer must never see a raw error; staff get a
@@ -15,7 +15,7 @@ guarantees hold together; and the project is documented for a reader who has nev
 
 **References**: `docs/project-outline.md` (phase 003), `docs/user-experience.md` §8 and §10,
 `docs/customer-scenarios.md`, `docs/prompt-history/04` and `06` (carried observations),
-`.specify/memory/constitution.md` (v1.0.0).
+`.specify/memory/constitution.md` (v1.1.0).
 
 **Numbering**: continues from phase 002. Stories **US9–US12**, criteria **AC-9.x–AC-12.x**.
 
