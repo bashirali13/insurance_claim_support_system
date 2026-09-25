@@ -8,6 +8,8 @@ from datetime import date, datetime
 
 from claim_intake.contracts import (
     ClaimAssessment,
+    ClaimRecord,
+    ClaimStatus,
     CustomerReply,
     IncidentType,
     InternalReport,
@@ -39,12 +41,78 @@ MISSING_WORDING = {
 TEAM_ROLE = {
     Team.CLAIMS_ADJUSTER: "A claims adjuster",
     Team.CUSTOMER_RELATIONS: "Our Customer Relations team",
+    Team.POLICY_SERVICES: "Our Policy Services team",
+    Team.PRIVACY_REVIEW: "A specialist",
+}
+
+STATUS_WORDING = {
+    ClaimStatus.SUBMITTED: "Received and waiting for review",
+    ClaimStatus.AWAITING_INFORMATION: "Waiting for information from you",
+    ClaimStatus.UNDER_REVIEW: "Under review by a claims adjuster",
+    ClaimStatus.ESCALATED: "With a specialist team for priority review",
+    ClaimStatus.CLOSED: "Closed",
+}
+
+HISTORY_WORDING = {
+    "FILED": "Claim filed",
+    "DETAILS_UPDATED": "Details added by you",
+    "HELP_REQUESTED": "Help request received",
+    "PRIVACY_REVIEW_OPENED": "Specialist review started",
+}
+
+# How claim fields are named to customers (updates and pending confirmations).
+FIELD_WORDING = {
+    "incident_date": "when it happened",
+    "location": "where it happened",
+    "damage_areas": "damage",
+    "police_report_mentioned": "police report",
+    "vehicle_drivable": "whether the car can be driven",
+    "other_property_damaged": "damage to other property",
+    "incident_type": "what kind of incident it was",
+    "um_uim_subtype": "the other driver's insurance situation",
+    "customer_side_injured": "injuries to you or your passengers",
+    "others_injured": "injuries to other people",
+    "other_party_involved": "whether another party was involved",
 }
 
 
 def format_follow_up(day: date) -> str:
     """e.g. 'Friday, Sep 25'."""
     return f"{day:%A}, {day:%b} {day.day}"
+
+
+def format_day(day: date) -> str:
+    """e.g. 'Sep 23, 2026'."""
+    return f"{day:%b} {day.day}, {day.year}"
+
+
+def incident_wording(incident: IncidentType) -> str:
+    return incident.replace("_", " ").capitalize()
+
+
+def render_status(record: ClaimRecord, today: date) -> str:
+    """Option 2 reply (contracts/cli.md). Built from the saved record only; no model."""
+    a = record.assessment
+    filed = format_day(record.filed_at.date())
+    header = f"Claim {record.claim_id}"
+    header += f": {incident_wording(a.incident_type)} (filed {filed})" if a else f" (filed {filed})"
+    last = record.history[-1]
+    lines = [
+        header,
+        f"  Status:      {STATUS_WORDING[record.status]}",
+        f"  Last update: {format_day(last.at.date())} - {HISTORY_WORDING[last.event]}",
+    ]
+    if a and a.missing_information:
+        lines.append("  Still needed:")
+        lines += [f"    • {MISSING_WORDING[item]}" for item in a.missing_information]
+    if a and record.pending_changes:
+        lines.append("  Waiting for an adjuster to confirm:")
+        lines += [f"    • {FIELD_WORDING[change.field]}" for change in record.pending_changes]
+    role = next((TEAM_ROLE[t] for t in record.teams if t in TEAM_ROLE), None)
+    if record.status != ClaimStatus.CLOSED and record.follow_up_date >= today and role:
+        by = format_follow_up(record.follow_up_date)
+        lines.append(f"  Next step:   {role} will contact you by {by}.")
+    return "\n".join(lines)
 
 
 def _bullets(items: list[str]) -> list[str]:

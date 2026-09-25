@@ -98,7 +98,7 @@ is involved.
 - [X] T008 [US6] Create `data/samples/CLM-2026-000{1..6}.json` per contracts/files.md (all
   fictional, sanitized, filed Sep 14–23, 2026; `0005` has the police report missing and time
   "yesterday around 6pm"), and add `storage.load_samples(root) -> list[str]`.
-- [ ] T009 [US6] In `src/claim_intake/reporting.py`:
+- [X] T009 [US6] In `src/claim_intake/reporting.py`:
   - `render_status(record, today) -> str`
   - the status, incident-type, history-event, and field wording tables from data-model.md
 - [ ] T010 [US6] Create `src/claim_intake/existing_claims.py` with
