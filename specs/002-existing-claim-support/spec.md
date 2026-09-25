@@ -4,7 +4,7 @@
 
 **Created**: 2026-09-25
 
-**Status**: Draft
+**Status**: Approved (2026-09-25)
 
 **Input**: User description: "Phase 002 of the Northstar Auto Insurance claim support system:
 menu options 2–4 for existing claims — check claim status, add or correct details, and get help
