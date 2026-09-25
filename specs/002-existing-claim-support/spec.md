@@ -30,6 +30,7 @@ acceptance criteria **AC-6.x–AC-8.x**. IDs stay unique across the project.
 - Q: After an update re-runs routing, are the claim's teams replaced or accumulated? → A: Replaced. Teams and the follow-up date become the latest result (a deliberate trade-off: a routine update can drop a previously routed team, while an `ESCALATED` status is kept by FR-208).
 - Plan-time consistency fix: FR-218 no longer lists `CHECK_STATUS`, because AC-6.8 forbids status checks from changing any file, including the event log.
 - Plan-time gap fix: AC-8.12 added so the Get help privacy-review outcome (required by FR-217 but previously unspecified for customers) has an acceptance criterion, matching phase 001 AC-5.8 and AC-7.10.
+- Q (plan review): Does "sensitive" include adding a previously unknown sensitive fact? → A: No. Only corrections of a known value are held; additions (unknown → known) apply immediately (AC-7.4).
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -112,7 +113,10 @@ check the reply, the updated record, its history, and the routing.
    another party was involved, or the UM/UIM situation), **When** it is processed, **Then** the
    reply says "An adjuster will confirm this change with you by <date>" (one business day away),
    the saved claim **keeps the original value**, the requested change is saved as a pending change
-   (field and requested value), and any non-sensitive changes in the same update are applied.
+   (field and requested value), and any non-sensitive changes in the same update are applied. **And given**
+   an update that only *adds* a previously unknown sensitive fact (e.g., injury goes from unknown to
+   yes), **Then** it is applied immediately and is not held, so a newly reported injury raises
+   urgency right away.
 5. **AC-7.5**: **Given** the details changed, **When** the claim is updated, **Then** missing
    information, coverage lines, risk indicators, risk level, teams, follow-up date, and status are
    all recomputed by the same rules as filing (phase 001 FR-013 to FR-020), with the status rule
