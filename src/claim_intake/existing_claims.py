@@ -20,10 +20,10 @@ from claim_intake.dates import add_business_days
 from claim_intake.orchestration import (
     PRIVACY_REVIEW_DAYS,
     Deps,
-    _is_private,
-    _Run,
-    _StepFailed,
-    _with_model_retries,
+    StepFailed,
+    TaskRun,
+    is_private,
+    with_model_retries,
 )
 from claim_intake.reporting import (
     format_follow_up,
@@ -52,7 +52,7 @@ def check_status(claim_id: str, store: ClaimStore, today: date) -> str:
     return render_status(store.load(claim_id), today)
 
 
-def _update_privacy_review(run: _Run, record: ClaimRecord, step: PipelineStep) -> TaskResult:
+def _update_privacy_review(run: TaskRun, record: ClaimRecord, step: PipelineStep) -> TaskResult:
     """AC-7.10: the update is NOT applied; Privacy Review joins the claim's existing teams."""
     follow_up = add_business_days(run.filed_at.date(), PRIVACY_REVIEW_DAYS)
     teams = [*record.teams, *([] if Team.PRIVACY_REVIEW in record.teams else [Team.PRIVACY_REVIEW])]
@@ -68,9 +68,9 @@ def _update_privacy_review(run: _Run, record: ClaimRecord, step: PipelineStep) -
     )
     try:
         run.deps.store.save(reviewed)
-        path = run._write_status_report(ProcessingStatus.MANUAL_REVIEW_REQUIRED, step, None)
+        path = run.write_status_report(ProcessingStatus.MANUAL_REVIEW_REQUIRED, step, None)
     except OSError as exc:
-        return run.fail(_StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
+        return run.fail(StepFailed(ProcessingStatus.FAILED_OUTPUT, step, type(exc).__name__))
     return TaskResult(
         processing_status=ProcessingStatus.MANUAL_REVIEW_REQUIRED,
         claim_id=record.claim_id,
@@ -89,14 +89,14 @@ def update_claim(
     on_progress: Callable[[int, str], None] = _ignore_progress,
 ) -> TaskResult:
     """Option 3 (US7). The caller has already refused closed and privacy-review claims."""
-    run = _Run(deps, MenuTask.UPDATE_DETAILS, claim_id=claim_id)
+    run = TaskRun(deps, MenuTask.UPDATE_DETAILS, claim_id=claim_id)
     record = deps.store.load(claim_id)
     agents = deps.agents
     today = run.filed_at.date()
     try:
         submission = run.step(
             PipelineStep.INTAKE,
-            lambda: _with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
+            lambda: with_model_retries(lambda: intake.scrub(RawSubmission(text=raw_text), agents)),
         )
         on_progress(1, UPDATE_PROGRESS_LABELS[0])
         if submission.requires_manual_review:
@@ -104,7 +104,7 @@ def update_claim(
 
         proposed = run.step(
             PipelineStep.ASSESSMENT,
-            lambda: _with_model_retries(
+            lambda: with_model_retries(
                 lambda: assessment.update(submission, record.assessment, agents)
             ),
         )
@@ -122,7 +122,7 @@ def update_claim(
         facts = assessment.complete(changes.applied)
         routing = run.step(
             PipelineStep.RISK,
-            lambda: _with_model_retries(lambda: risk.evaluate(submission, facts, today, agents)),
+            lambda: with_model_retries(lambda: risk.evaluate(submission, facts, today, agents)),
         )
 
         # FR-208 to FR-210: teams and date are replaced by the latest result.
@@ -186,7 +186,7 @@ def update_claim(
 
         private = run.step(
             PipelineStep.PRIVACY_GUARD,
-            lambda: _is_private(reply.text, report.markdown, updated.model_dump_json()),
+            lambda: is_private(reply.text, report.markdown, updated.model_dump_json()),
         )
         if not private:
             return _update_privacy_review(run, record, PipelineStep.PRIVACY_GUARD)
@@ -196,7 +196,7 @@ def update_claim(
             return deps.reports.write(report, claim_id, run.filed_at)
 
         path = run.step(PipelineStep.SAVE, save)
-    except _StepFailed as failure:
+    except StepFailed as failure:
         return run.fail(failure)
 
     return TaskResult(

@@ -188,7 +188,7 @@ check the reply, the saved record, and the history.
   with task `UPDATE_DETAILS`).
 - [X] T021 [US7] In `src/claim_intake/cli.py`: option 3 (closed and privacy-review refusals, text
   prompt, progress, reply).
-- [ ] T022 [US7] Refactor pass (`rules.py`, `existing_claims.py`), keeping the suite green.
+- [X] T022 [US7] Refactor pass (`rules.py`, `existing_claims.py`), keeping the suite green.
 
 **Checkpoint**: `uv run pytest -k "ac_6 or ac_7"` green.
 
