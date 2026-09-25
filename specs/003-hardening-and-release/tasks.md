@@ -132,7 +132,7 @@ tested as pure formatting; the CLI prints it only with the flag.
   table), including "no team routed".
 - [X] T013 [US10] In `src/claim_intake/cli.py`, add the `--trace` flag and print
   `render_trace(result.trace)` after replies of options 1, 3, and 4.
-- [ ] T014 [US10] Refactor pass, keeping the suite green.
+- [X] T014 [US10] Refactor pass, keeping the suite green.
 
 **Checkpoint**: `uv run pytest -k ac_10` green.
 
