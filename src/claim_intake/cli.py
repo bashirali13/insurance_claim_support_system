@@ -1,5 +1,6 @@
 """Terminal interface (contracts/cli.md). The only module that reads input or prints."""
 
+import argparse
 import os
 from datetime import datetime
 from pathlib import Path
@@ -10,8 +11,10 @@ from dotenv import load_dotenv  # noqa: E402
 
 from claim_intake.agents import create_agents  # noqa: E402
 from claim_intake.config import ConfigError, build_model, load_settings  # noqa: E402
+from claim_intake.existing_claims import check_status  # noqa: E402
 from claim_intake.orchestration import Deps, file_claim  # noqa: E402
-from claim_intake.storage import ClaimStore, EventLog, ReportWriter  # noqa: E402
+from claim_intake.rules import normalize_claim_number  # noqa: E402
+from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples  # noqa: E402
 
 MAX_NARRATIVE_CHARS = 5000
 RULE = "=" * 50
@@ -37,6 +40,9 @@ TOO_LONG = "That's longer than we can accept here (limit 5,000 characters). Plea
 COMING_SOON = "This option is coming soon."
 INVALID_CHOICE = "Please choose a number from 1 to 5."
 GOODBYE = "Thank you for contacting Northstar Auto Insurance. Goodbye."
+CLAIM_NUMBER_PROMPT = "Enter your claim number (e.g. CLM-2026-0007): "
+BAD_CLAIM_NUMBER = "Claim numbers look like CLM-2026-0007. Please try again."
+UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try again."
 PROGRESS_WIDTH = 42
 
 
@@ -61,6 +67,21 @@ def read_narrative() -> str:
             return text
 
 
+def ask_claim_number(deps: Deps) -> str | None:
+    """Re-prompt until a claim number that exists is entered; an empty entry returns None."""
+    while True:
+        entry = input(CLAIM_NUMBER_PROMPT)
+        if not entry.strip():
+            return None
+        claim_id = normalize_claim_number(entry)
+        if claim_id is None:
+            print(BAD_CLAIM_NUMBER)
+        elif not deps.store.exists(claim_id):
+            print(UNKNOWN_CLAIM)
+        else:
+            return claim_id
+
+
 def run(deps: Deps) -> int:
     while True:
         print(MENU)
@@ -71,7 +92,12 @@ def run(deps: Deps) -> int:
             print()
             print(result.customer_message)
             print()
-        elif choice in {"2", "3", "4"}:
+        elif choice == "2":
+            if claim_id := ask_claim_number(deps):
+                print()
+                print(check_status(claim_id, deps.store, deps.now().date()))
+                print()
+        elif choice in {"3", "4"}:
             print(COMING_SOON)
         elif choice == "5":
             print(GOODBYE)
@@ -91,11 +117,18 @@ def build_deps(root: Path) -> Deps:
     )
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(prog="claim-support")
+    parser.add_argument(
+        "--load-samples", action="store_true", help="copy sample claims into data/claims/"
+    )
+    args = parser.parse_args(argv)
     load_dotenv()
     try:
         deps = build_deps(Path.cwd())
     except ConfigError as problem:
         print(problem)
         return 1
+    if args.load_samples:
+        print(f"Loaded {len(load_samples(Path.cwd()))} sample claims.")
     return run(deps)

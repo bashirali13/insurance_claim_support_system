@@ -101,12 +101,12 @@ is involved.
 - [X] T009 [US6] In `src/claim_intake/reporting.py`:
   - `render_status(record, today) -> str`
   - the status, incident-type, history-event, and field wording tables from data-model.md
-- [ ] T010 [US6] Create `src/claim_intake/existing_claims.py` with
+- [X] T010 [US6] Create `src/claim_intake/existing_claims.py` with
   `check_status(claim_id, store, today)`. In `src/claim_intake/cli.py`:
   - a claim-number prompt helper (options 2 and 3 behavior)
   - option 2
   - an `argparse` `--load-samples` flag printing `Loaded N sample claims.`
-- [ ] T011 [US6] Refactor pass (`reporting.py`, `cli.py`), keeping the suite green.
+- [X] T011 [US6] Refactor pass (`reporting.py`, `cli.py`), keeping the suite green.
 
 **Checkpoint**: `uv run pytest -k ac_6` green; `uv run claim-support --load-samples` → option 2
 works.

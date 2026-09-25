@@ -46,6 +46,9 @@ class ClaimStore:
         tmp.write_text(record.model_dump_json(indent=2), encoding="utf-8")
         os.replace(tmp, path)
 
+    def exists(self, claim_id: str) -> bool:
+        return self._path(claim_id).exists()
+
     def load(self, claim_id: str) -> ClaimRecord:
         return ClaimRecord.model_validate_json(self._path(claim_id).read_text(encoding="utf-8"))
 
