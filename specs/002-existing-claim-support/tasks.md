@@ -255,7 +255,7 @@ routing, the help record, the reply, and the claim history.
   validator here and reuse it). Add the help-triage agent and `triage()` in
   `agents/risk.py`, and the help-reply agent and `help_opening()` in `agents/summary.py`. Register
   both in `create_agents`.
-- [ ] T031 [US8] In `src/claim_intake/storage.py`: extract `NumberedFiles(dir, prefix)` from
+- [X] T031 [US8] In `src/claim_intake/storage.py`: extract `NumberedFiles(dir, prefix)` from
   `ClaimStore` (phase 001 storage tests stay green) and add `HelpStore` (`data/help/`, `HELP`).
 - [ ] T032 [US8] In `src/claim_intake/reporting.py`: `render_help_reply` and
   `render_help_report`.
