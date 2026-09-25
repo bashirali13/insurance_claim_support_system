@@ -8,6 +8,7 @@ team.
 - Governing rules: `.specify/memory/constitution.md`. It wins any conflict with this file.
 - Scope and background: `docs/project-outline.md`.
 - How the product looks and behaves in the terminal: `docs/user-experience.md`.
+- Example customer inputs and expected outcomes (test reference): `docs/customer-scenarios.md`.
 - Feature specs: `specs/NNN-feature/` (`spec.md`, `plan.md`, `tasks.md`).
 
 ## Commands
@@ -19,6 +20,7 @@ uv run pytest -m live        # tests that call the real model via OpenRouter
 uv run pytest -k ac_2_3      # tests for one acceptance criterion
 uv run ruff check .          # lint
 uv run ruff format .         # format
+uv run claim-support         # run the terminal app (needs .env)
 ```
 
 Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`. Never commit `.env`.

@@ -66,7 +66,7 @@ The details are in `docs/user-experience.md` §1.
 - **Glass**
 - **Animal strike**
 - **Unknown:** not enough information to classify
-- **Mixed:** multiple unrelated incidents; escalated, and the customer is asked to file separately
+- **Mixed:** multiple unrelated incidents; one claim is created and an adjuster separates them
 
 Liability and UM/UIM are **coverage lines triggered by facts about other parties**, not incident types. For example, a hit-and-run is a `COLLISION` with the UM/UIM line triggered.
 
@@ -220,10 +220,11 @@ Every routed request gets a realistic follow-up date computed by code (1–3 bus
 Final names and fields are set in SpecKit specs and plans. All contracts use `frozen=True, extra="forbid"`, and every category is a `StrEnum`.
 
 ```python
-class RawSubmission(BaseModel):     # orchestrator + intake agent only
+class RawSubmission(BaseModel):  # orchestrator + intake agent only
     task: MenuTask
     text: str
     claim_id: str | None
+
 
 class SanitizedSubmission(BaseModel):  # the only text type downstream agents accept
     task: MenuTask
@@ -231,6 +232,7 @@ class SanitizedSubmission(BaseModel):  # the only text type downstream agents ac
     claim_id: str | None
     pii_types_removed: list[PiiType]
     requires_manual_review: bool
+
 
 class ClaimAssessment(BaseModel):
     incident_type: IncidentType
@@ -240,23 +242,26 @@ class ClaimAssessment(BaseModel):
     other_party_involved: bool | None
     vehicle_drivable: bool | None
     key_facts: list[str]
-    missing_information: list[str]          # computed by per-incident checklist
+    missing_information: list[str]  # computed by per-incident checklist
     contradictions: list[str]
     coverage_lines_to_review: list[CoverageLine]  # computed by rules from facts
+
 
 class RiskAssessment(BaseModel):
     sentiment: Sentiment
     risk_indicators: list[RiskIndicator]
-    request_categories: list[RequestCategory]   # "Get help" task only
-    risk_level: RiskLevel                       # computed by rules
-    escalation_teams: list[EscalationTeam]      # computed by rules
+    request_categories: list[RequestCategory]  # "Get help" task only
+    risk_level: RiskLevel  # computed by rules
+    escalation_teams: list[EscalationTeam]  # computed by rules
     rationale: str
 
-class ClaimRecord(BaseModel):       # persisted as sanitized JSON only
+
+class ClaimRecord(BaseModel):  # persisted as sanitized JSON only
     claim_id: str
     status: ClaimStatus
     incident_type: IncidentType
     history: list[ClaimHistoryEntry]
+
 
 class TaskResult(BaseModel):
     processing_status: ProcessingStatus
@@ -407,6 +412,7 @@ The UI shows progress, the customer reply, and the report location. It never sho
 ├── tests/{unit,integration,fixtures}/
 ├── data/claims/               # sanitized claim records (seeded samples)
 ├── output/                    # generated reports (gitignored)
+├── logs/                      # text-free event log (gitignored)
 ├── docs/
 │   ├── prompt-history/        # summaries at key project moments
 │   └── samples/               # curated sample reports

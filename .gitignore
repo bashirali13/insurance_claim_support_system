@@ -223,3 +223,12 @@ __marimo__/
 # Generated claim reports (curated samples live in docs/samples/)
 output/*
 !output/.gitkeep
+
+# Text-free event log (FR-033 in specs/001-file-a-claim)
+logs/
+
+# OS and editor temp files
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp

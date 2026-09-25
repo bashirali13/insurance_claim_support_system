@@ -1,2 +1,1 @@
-def main() -> None:
-    print("Hello from claim-intake!")
+"""Northstar Auto Insurance claim support system."""
