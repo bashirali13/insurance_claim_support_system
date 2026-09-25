@@ -264,7 +264,7 @@ routing, the help record, the reply, and the claim history.
   task `GET_HELP`).
 - [X] T034 [US8] In `src/claim_intake/cli.py`: option 4 with the optional claim-number prompt.
   This removes the last "coming soon".
-- [ ] T035 [US8] Refactor pass (`existing_claims.py`, `cli.py`, agents), keeping the suite green.
+- [X] T035 [US8] Refactor pass (`existing_claims.py`, `cli.py`, agents), keeping the suite green.
 
 **Checkpoint**: full `uv run pytest` green; every AC-6.x, AC-7.x, AC-8.x has a named test.
 

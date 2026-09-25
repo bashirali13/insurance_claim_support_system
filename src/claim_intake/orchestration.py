@@ -201,14 +201,14 @@ def is_private(*texts: str) -> bool:
     return not any(find_pii(text) for text in texts)
 
 
-def _ignore_progress(step: int, label: str) -> None:
+def ignore_progress(step: int, label: str) -> None:
     pass
 
 
 def file_claim(
     raw_text: str,
     deps: Deps,
-    on_progress: Callable[[int, str], None] = _ignore_progress,
+    on_progress: Callable[[int, str], None] = ignore_progress,
 ) -> TaskResult:
     run = TaskRun(deps)
     agents = deps.agents

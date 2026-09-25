@@ -25,6 +25,7 @@ from claim_intake.orchestration import (
     Deps,
     StepFailed,
     TaskRun,
+    ignore_progress,
     is_private,
     with_model_retries,
 )
@@ -48,10 +49,6 @@ UPDATE_PROGRESS_LABELS = (
 NOTHING_CHANGED = "We didn't find any new or changed details. Nothing was updated."
 PENDING_CONFIRMATION_DAYS = 1
 CONTACT_CHANGE_DAYS = 3
-
-
-def _ignore_progress(step: int, label: str) -> None:
-    pass
 
 
 def check_status(claim_id: str, store: ClaimStore, today: date) -> str:
@@ -93,7 +90,7 @@ def update_claim(
     claim_id: str,
     raw_text: str,
     deps: Deps,
-    on_progress: Callable[[int, str], None] = _ignore_progress,
+    on_progress: Callable[[int, str], None] = ignore_progress,
 ) -> TaskResult:
     """Option 3 (US7). The caller has already refused closed and privacy-review claims."""
     run = TaskRun(deps, MenuTask.UPDATE_DETAILS, claim_id=claim_id)
@@ -288,7 +285,7 @@ def get_help(
     claim_id: str | None,
     raw_text: str,
     deps: Deps,
-    on_progress: Callable[[int, str], None] = _ignore_progress,
+    on_progress: Callable[[int, str], None] = ignore_progress,
 ) -> TaskResult:
     """Option 4 (US8). `claim_id` is a verified, existing claim number or None."""
     run = TaskRun(deps, MenuTask.GET_HELP, claim_id=claim_id)
