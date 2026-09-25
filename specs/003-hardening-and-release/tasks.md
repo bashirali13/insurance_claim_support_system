@@ -53,10 +53,15 @@ monkeypatched to raise.
     per AC-6.8)
   - `test_ac_9_2_end_of_input_at_any_prompt_says_goodbye_and_exits_0` (parametrized: at the menu,
     at a claim-number prompt, mid-narrative)
-  - `test_ac_9_3_ctrl_c_at_a_prompt_prints_stopped_and_exits_130`
+  - `test_ac_9_3_ctrl_c_at_a_prompt_prints_stopped_and_exits_130` (parametrized: the same three
+    prompts as AC-9.2)
   - `test_ac_9_3_ctrl_c_during_filing_leaves_no_claim_file` (the summary model raises
     `KeyboardInterrupt`; `data/claims/` has no new file)
   - `test_ac_9_3_ctrl_c_during_help_releases_the_reference` (`data/help/` is empty)
+  - `test_ac_9_1_unexpected_error_after_reservation_leaves_no_claim_file` (a bug raised after the
+    claim number is reserved; `data/claims/` has no new file; FR-303)
+  - `test_ac_9_1_unexpected_error_after_reference_leaves_no_help_record` (the same for a help
+    reference)
   - `test_ac_9_4_no_failure_output_contains_technical_detail` (parametrized over all of the above;
     no "Traceback", exception class names, paths, or "deepseek"/"openrouter")
 
@@ -67,8 +72,9 @@ monkeypatched to raise.
   writes a status-only report (claim `None`, failed step `None`, error category = the exception
   class name, task wording) and never prints.
 - [ ] T003 [US9] In `src/claim_intake/orchestration.py`, add `TaskRun.release_reservation()`.
-  `file_claim` catches `KeyboardInterrupt`, releases, and re-raises. In
-  `src/claim_intake/existing_claims.py`, `get_help` does the same for a reserved help reference.
+  `file_claim` releases on **any** exception that escapes it (`except BaseException: release;
+  raise`), whether an unexpected bug or Ctrl+C (FR-303). In `src/claim_intake/existing_claims.py`,
+  `get_help` does the same for a reserved help reference.
 - [ ] T004 [US9] In `src/claim_intake/cli.py`:
   - a per-task `try/except Exception` boundary in `run()` (options 1, 3, and 4 call
     `record_unexpected`; option 2 writes nothing)
@@ -102,7 +108,8 @@ tested as pure formatting; the CLI prints it only with the flag.
   - `test_ac_10_2_update_trace_lists_added_corrected_pending_fields`
   - `test_ac_10_2_help_trace_lists_categories_and_teams` and
     `test_ac_10_2_redirect_only_help_trace_says_no_team_routed`
-  - `test_ac_10_3_failure_trace_has_failed_step_and_category`
+  - `test_ac_10_3_failure_trace_has_failed_step_and_category` (parametrized: filing, update,
+    help)
   - `test_ac_10_4_trace_has_no_narrative_prose_or_personal_values` (parametrized over the flows;
     narrative words, the model opening line, the rationale, and secret values are all absent)
 - [ ] T008 [P] [US10] Append to `tests/integration/test_cli.py`:
@@ -145,14 +152,14 @@ The contact-change history detail is fixed.
   helper `assert_customer_safe(result, workdirs, secrets)` (no secret in any file or the reply, no
   placeholder in the reply, no forbidden decision term in the reply, every event-log line
   structured), plus:
-  - `test_ac_11_1_filing_scenario_is_customer_safe_and_routed_*`, parametrized over S17, S20, S21,
-    S22, S24, S25, S26, S27 with the expected routing and status from the catalog
+  - `test_ac_11_1_filing_scenario_is_customer_safe_and_routed_*`, parametrized over S17, S18, S19,
+    S20, S21, S22, S24, S25, S26, S27 with the expected routing and status from the catalog
   - `test_ac_11_1_input_at_5000_chars_is_accepted_and_5001_rejected` (via the CLI)
   - `test_ac_11_2_update_and_help_scenario_is_customer_safe_*`, parametrized over: injection in an
     update, a PII-only update, lawyer plus complaint, out-of-scope plus distress, "approve my
     claim" in help
 
-  That's at least 15 scenarios in total (SC-303).
+  That's 16 scenarios in total (SC-303 requires at least 15).
 
 ### Implementation
 
@@ -183,6 +190,8 @@ The contact-change history detail is fixed.
   - `test_ac_12_4_samples_cover_filing_update_help_privacy_and_escalation`
   - `test_ac_12_4_samples_have_reply_and_report_sections_and_notice`
   - `test_ac_12_4_samples_contain_no_personal_values`
+  - `test_ac_12_4_scripted_privacy_sample_is_labeled` (the privacy-review sample contains the
+    visible "scripted run" note)
 
 ### Implementation
 
@@ -193,10 +202,11 @@ The contact-change history detail is fixed.
   (including `--load-samples` and `--trace`), the menu options, safety guarantees, testing,
   structure, the SDD/TDD process, and links. Embed a summary Mermaid diagram.
 - [ ] T023 [US12] Capture samples with the real model in a scratch folder (research R6: S01, S10,
-  S22, E04, E07, E08, E10, plus a labeled privacy-review example), review them, and commit them to
-  `docs/samples/*.md` with `## Customer reply` and `## Staff report` sections.
-- [ ] T024 [US12] Run quickstart steps Q-9, Q-10, Q-12.1 (fresh clone), and Q-12.3 (GitHub
-  rendering, after push); record the results.
+  S22, E04, E07, E08, E10), review them, and commit them to `docs/samples/*.md` with
+  `## Customer reply` and `## Staff report` sections. Produce the privacy-review example with a
+  scripted run and label it (AC-12.4).
+- [ ] T024 [US12] Run quickstart steps Q-9, Q-10, and Q-12.1 (fresh clone); record the results.
+  Q-12.3 needs the pushed branch, so it runs in T027.
 
 **Checkpoint**: `uv run pytest -k ac_12` green; the quickstart steps pass.
 
@@ -208,8 +218,9 @@ The contact-change history detail is fixed.
   Commands (`--load-samples`, `--trace`).
 - [ ] T026 Run the final `uv run ruff format .`, `uv run ruff check .`, full `uv run pytest`, and
   the SC-306 AC coverage check.
-- [ ] T027 Write `docs/prompt-history/08-implementation-003.md`, push, open the phase PR with
-  `gh`, present the phase-completion check, and ask about the stretch phase 004 (local web UI).
+- [ ] T027 Write `docs/prompt-history/08-implementation-003.md`, push, run quickstart Q-12.3
+  (Mermaid renders on GitHub), open the phase PR with `gh`, present the phase-completion check,
+  and ask about the stretch phase 004 (local web UI).
 
 ---
 
@@ -243,5 +254,5 @@ The contact-change history detail is fixed.
 | 10.2 | T007 | 11.4 | T015 → T017 |
 | 10.3 | T006, T007 | 12.1 | T024 (quickstart Q-12.1) |
 | 10.4 | T006, T007 | 12.2 | T020 |
-| 10.5 | T008 | 12.3 | T020 (modules) + T024 (Q-12.3 visual) |
+| 10.5 | T008 | 12.3 | T020 (modules) + T027 (Q-12.3 visual) |
 | | | 12.4 | T020, T023 |

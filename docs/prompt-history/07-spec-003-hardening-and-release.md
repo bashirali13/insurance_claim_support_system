@@ -71,3 +71,38 @@ adversarial suite, and release documentation (README, architecture diagram, samp
 `/speckit-plan` for 003: a last-resort error boundary in the CLI, EOF and Ctrl+C handling, trace
 rendering from contracts, the adversarial scenario suite plus a live set, the contact-change history
 detail, and the README, architecture, and samples workflow.
+
+## Amendment: Plan, Tasks, and Analyze
+
+**Prompts (condensed):** *"Feel free to make that amendment… Run speckit plan."* → `/speckit-tasks` →
+`/speckit-analyze` → *"Apply directly and re-run analyze."*
+
+**Plan highlights:**
+- **The error boundary lives in the CLI,** so the core still never prints. `record_unexpected`
+  only writes a report.
+- **End-of-input exits with 0;** Ctrl+C exits with 130.
+- **Trace entries travel inside `TaskResult`** and are rendered by the CLI, using structured fields
+  only, with a privacy gate and never on disk.
+- **The adversarial suite is data-driven,** with one shared "customer-safe" check.
+- **The docs are guarded by tests:** links, real CLI flags, the Mermaid diagram's modules, and PII
+  and sections in the samples.
+
+**Spec fixes (always spec-first):**
+- **Plan:** an unexpected error in a status check writes nothing (AC-9.1 vs phase 002 AC-6.8). The
+  first attempt at this fix silently didn't apply while its commit went through with only the plan
+  template. Claude caught the mislabeled commit and amended it (unpushed) so the message matched the
+  contents.
+- **Tasks:** adversarial tests are labeled *verification* tests. They test existing guarantees and
+  add no code; any failure is a real bug with its own Red → Green fix.
+
+**What analyze found (0 critical):**
+
+| Finding | Fix |
+|---|---|
+| **H1, a real defect:** an unexpected bug *after* a claim number or help reference is reserved re-raises without releasing it, leaving an empty file (confirmed at `orchestration.py`, `raise exc`) | Flows release on **any** escaping exception, not only Ctrl+C; two new AC-9.1 tests |
+| M1: the plan had 14 adversarial scenarios, but SC-303 needs 15 or more | Added S18 and S19 (16 total) |
+| M2: "real-model samples" vs a scripted privacy-review sample | AC-12.4 allows one labeled scripted sample; a test checks the label |
+| Low-severity fixes | Ctrl+C tested at every prompt; failure traces for all flows; Q-12.3 moved after the push |
+
+**Lesson:** analyze again caught an unhappy path, this time *inside the failure handling itself*,
+by reading the actual code rather than only the documents.

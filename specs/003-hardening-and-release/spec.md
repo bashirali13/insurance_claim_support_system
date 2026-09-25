@@ -28,6 +28,7 @@ guarantees hold together; and the project is documented for a reader who has nev
 - Q: What format should the architecture diagram use? → A: Mermaid in `docs/architecture.md`, with a short summary version embedded in the README.
 - Q: Should committed samples come from real-model or scripted runs? → A: Real-model runs, reviewed and committed; a test checks each sample is free of personal values and has the required sections, without comparing exact wording.
 - Plan-time consistency fix: AC-9.1's status-only report does not apply to status checks (option 2), which phase 002 AC-6.8 keeps write-free.
+- Analyze remediation (user-approved): AC-12.4 allows a labeled scripted privacy-review sample; tasks now release reserved numbers on any escaping failure (FR-303), cover at least 15 adversarial scenarios (SC-303), and test Ctrl+C and failure traces across all prompts and flows.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -161,7 +162,9 @@ and every file it links exists.
    customer reply and staff report for filing, updating, and help (including one privacy-review and
    one escalation example), all fictional and free of personal values. Samples come from real-model
    runs (reviewed before committing), and an automated check verifies no personal values and the
-   required reply and report sections, without comparing exact wording.
+   required reply and report sections, without comparing exact wording. The one exception is the
+   privacy-review example, which the real model can't be made to trigger on demand: it may come
+   from a scripted run and must say so in a visible note in the sample file.
 
 ---
 
