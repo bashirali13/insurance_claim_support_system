@@ -186,7 +186,7 @@ check the reply, the saved record, and the history.
 - [X] T020 [US7] In `src/claim_intake/existing_claims.py`: `update_claim(claim_id, raw_text, deps,
   on_progress)` per contracts/agents.md (normal, no-change, privacy, and failure paths; `_Run`
   with task `UPDATE_DETAILS`).
-- [ ] T021 [US7] In `src/claim_intake/cli.py`: option 3 (closed and privacy-review refusals, text
+- [X] T021 [US7] In `src/claim_intake/cli.py`: option 3 (closed and privacy-review refusals, text
   prompt, progress, reply).
 - [ ] T022 [US7] Refactor pass (`rules.py`, `existing_claims.py`), keeping the suite green.
 

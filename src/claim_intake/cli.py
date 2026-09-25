@@ -3,6 +3,7 @@
 import argparse
 import os
 from datetime import datetime
+from functools import partial
 from pathlib import Path
 
 os.environ.setdefault("PYDANTIC_AI_NO_BANNER", "1")  # keep library output out of the customer view
@@ -11,8 +12,10 @@ from dotenv import load_dotenv  # noqa: E402
 
 from claim_intake.agents import create_agents  # noqa: E402
 from claim_intake.config import ConfigError, build_model, load_settings  # noqa: E402
-from claim_intake.existing_claims import check_status  # noqa: E402
+from claim_intake.contracts import ClaimStatus  # noqa: E402
+from claim_intake.existing_claims import check_status, update_claim  # noqa: E402
 from claim_intake.orchestration import Deps, file_claim  # noqa: E402
+from claim_intake.reporting import format_follow_up  # noqa: E402
 from claim_intake.rules import normalize_claim_number  # noqa: E402
 from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_samples  # noqa: E402
 
@@ -35,6 +38,12 @@ FILING_PROMPT = """
 Tell us what happened, in your own words. Include when and where it
 happened, what was damaged, and whether anyone was hurt.
 Press Enter on an empty line when you're done."""
+UPDATE_PROMPT = """
+What would you like to add or correct?
+Press Enter on an empty line when you're done."""
+CLOSED_CLAIM = (
+    "This claim is closed. If you need help with it, choose option 4 (Get help with my claim)."
+)
 EMPTY_INPUT = "Please describe what happened, then press Enter on an empty line."
 TOO_LONG = "That's longer than we can accept here (limit 5,000 characters). Please shorten it."
 COMING_SOON = "This option is coming soon."
@@ -46,15 +55,15 @@ UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try aga
 PROGRESS_WIDTH = 42
 
 
-def print_progress(step: int, label: str) -> None:
+def print_progress(step: int, label: str, total: int = 4) -> None:
     dots = "." * (PROGRESS_WIDTH - len(label))
-    print(f"  [{step}/4] {label} {dots} done")
+    print(f"  [{step}/{total}] {label} {dots} done")
 
 
-def read_narrative() -> str:
+def read_narrative(prompt: str = FILING_PROMPT) -> str:
     """Read lines until an empty one; re-prompt until the text is non-empty and short enough."""
     while True:
-        print(FILING_PROMPT)
+        print(prompt)
         lines = []
         while (line := input("> ")).strip():
             lines.append(line)
@@ -82,6 +91,31 @@ def ask_claim_number(deps: Deps) -> str | None:
             return claim_id
 
 
+def privacy_hold_message(follow_up, today) -> str:
+    when = f"by {format_follow_up(follow_up)}" if follow_up >= today else "soon"
+    return (
+        f"This claim is with a specialist for a privacy review. They'll contact you {when}, "
+        "and you can share any updates with them then."
+    )
+
+
+def add_or_correct(deps: Deps, claim_id: str) -> None:
+    """Option 3: refuse closed and privacy-review claims before asking for any text."""
+    record = deps.store.load(claim_id)
+    if record.status == ClaimStatus.CLOSED:
+        print(CLOSED_CLAIM)
+        return
+    if record.assessment is None:
+        print(privacy_hold_message(record.follow_up_date, deps.now().date()))
+        return
+    print()
+    text = read_narrative(UPDATE_PROMPT)
+    result = update_claim(claim_id, text, deps, on_progress=partial(print_progress, total=3))
+    print()
+    print(result.customer_message)
+    print()
+
+
 def run(deps: Deps) -> int:
     while True:
         print(MENU)
@@ -97,7 +131,10 @@ def run(deps: Deps) -> int:
                 print()
                 print(check_status(claim_id, deps.store, deps.now().date()))
                 print()
-        elif choice in {"3", "4"}:
+        elif choice == "3":
+            if claim_id := ask_claim_number(deps):
+                add_or_correct(deps, claim_id)
+        elif choice == "4":
             print(COMING_SOON)
         elif choice == "5":
             print(GOODBYE)
