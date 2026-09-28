@@ -7,7 +7,7 @@ from pydantic_ai.models.function import FunctionModel
 from claim_intake import cli
 from claim_intake.contracts import HelpReplyLlmOutput, IntakeLlmOutput, RequestCategory
 from tests.builders import assessment_output, risk_output, triage_output
-from tests.integration.conftest import CTRL_C, HEADER, make_deps, snapshot
+from tests.integration.conftest import CTRL_C, make_deps, snapshot
 
 UNEXPECTED = "Something went wrong on our side. Please try again later."
 STOPPED = "Stopped. Nothing further was sent."
@@ -60,7 +60,7 @@ def test_ac_9_1_unexpected_error_in_filing_shows_message_reports_and_returns_to_
 
     assert code == 0
     assert UNEXPECTED in out
-    assert out.count(HEADER) == 2  # back at the menu afterwards
+    assert out.count(" 5. Exit") == 2  # back at the menu afterwards
     (report,) = reports(workdirs)
     assert "FAILED_UNEXPECTED" in report
     assert "ZeroDivisionError" in report

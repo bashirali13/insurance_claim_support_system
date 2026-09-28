@@ -16,13 +16,14 @@ def keyboard(monkeypatch):
     """Feed lines to input() in order, like a real terminal.
 
     When the script runs out, input() raises EOFError (the terminal closed). A CTRL_C entry raises
-    KeyboardInterrupt at that prompt.
+    KeyboardInterrupt at that prompt. Prompts are printed, as the real input() does.
     """
 
     def type_lines(*lines) -> None:
         queue = list(lines)
 
         def fake_input(prompt=""):
+            print(prompt)
             if not queue:
                 raise EOFError
             line = queue.pop(0)
