@@ -95,6 +95,13 @@ Choose an option (1-5):
 - The orchestrator checks `.env` for `OPENROUTER_API_KEY` and `MODEL_NAME`. If either is missing,
   the app stops with a clear setup message before showing the menu.
 - After each task the app returns to the menu, until the customer chooses Exit.
+- **Keeping the reply in focus (phase 004):**
+  - Every reply (new claim, status, update, help) is framed by dashed rules with a title line:
+    `Your claim number: …`, `Your claim status`, `Your claim update`, or `Your help request`.
+  - After a reply, the app waits at `Press Enter to return to the menu.`
+  - The full banner and privacy note show only once, at startup. Later menus use a short
+    `=== Main menu ===` header.
+  - The screens in the sections below show replies without these frames, for brevity.
 - **Multi-line input:** the customer types freely and presses Enter on an empty line to finish.
 
 ---

@@ -12,6 +12,11 @@ uv run claim-support --load-samples  # copy missing sample claims into data/clai
 
 With `--load-samples`, before the menu the app prints `Loaded N sample claims.` (N may be 0).
 
+> **Phase 004 amendment (AC-13.1 to AC-13.3):** replies from options 2 to 4 are framed with a
+> title line (`Your claim status`, `Your claim update`, `Your help request`). After any reply,
+> "back to the menu" means the app first waits at `Press Enter to return to the menu.` The full
+> banner shows only at startup, and later menus use a short `=== Main menu ===` header.
+
 ## Claim-number prompt (shared by options 2, 3, 4)
 
 | Option | Prompt |
