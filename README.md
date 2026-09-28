@@ -88,8 +88,8 @@ uv run claim-support --load-samples   # also load six sample claims, CLM-2026-00
 uv run claim-support --trace          # show a sanitized staff trace after each reply
 ```
 
-Type or paste your description, then press Enter on an empty line to send it. Choose option 5 to
-exit.
+Type or paste your description, then press Enter on an empty line to send it. Each reply is
+framed and stays on screen until you press Enter to return to the menu. Choose option 5 to exit.
 
 A quick tour: start with `--load-samples`, choose **2** and enter `CLM-2026-0005`, then choose
 **1** and describe a fender-bender. Your claim is saved in `data/claims/`, and the staff report is
@@ -150,6 +150,7 @@ This project follows **spec-driven development** with strict **test-driven devel
 | [001 File a claim](specs/001-file-a-claim/spec.md) | The four agents, PII pipeline, rules, reports |
 | [002 Existing-claim support](specs/002-existing-claim-support/spec.md) | Status, add/correct details, get help |
 | [003 Hardening and release](specs/003-hardening-and-release/spec.md) | Error boundary, trace mode, adversarial suite, docs |
+| [004 Terminal polish](specs/004-terminal-polish/spec.md) | Pause after replies, framed replies, live-demo fix |
 
 ## Further reading
 
@@ -157,6 +158,7 @@ This project follows **spec-driven development** with strict **test-driven devel
 - [Project outline](docs/project-outline.md): scope and background
 - [User experience walkthrough](docs/user-experience.md): every screen and message
 - [Customer scenarios](docs/customer-scenarios.md): example inputs and expected outcomes
+- [Demo script](docs/demo-script.md): seven short stories that show every capability live
 - [Architecture](docs/architecture.md): components and the filing sequence
 - [Prompt history](docs/prompt-history/): the decisions, pushbacks, and clarifications behind
   each phase
