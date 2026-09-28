@@ -48,3 +48,14 @@ and the menu comes back only when they're ready.
 ## Out of Scope
 
 Clearing the screen (it breaks piped runs and scrollback), colors, and the web UI.
+
+## User Story 14: Live demo finding (P1)
+
+The live run of `docs/demo-script.md` (2026-09-28) found one defect. For *"Someone smashed my car
+window and stole my laptop bag."*, the model returned the text `UNKNOWN` for the date and place
+instead of leaving them empty. So the customer was never asked for them.
+
+1. **AC-14.1**: **Given** the model gives a stated-unknown value (`UNKNOWN`, `not provided`,
+   `N/A`, `none`, or blank, in any case) for the incident date or location, **When** the facts are
+   checked, **Then** that value is treated as missing: it isn't stored, and the missing-information
+   checklist asks for it.

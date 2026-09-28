@@ -340,3 +340,14 @@ def test_ac_3_7_legal_representation_is_high_risk_and_adds_special_review():
 )
 def test_ac_5_4_initial_status_priority(level, missing, privacy_review, expected):
     assert initial_status(level, missing, privacy_review=privacy_review) == expected
+
+
+# --- Phase 004: live demo finding (US14) ------------------------------------------------------
+
+
+@pytest.mark.parametrize("stated", ["UNKNOWN", "not provided", "N/A", "none", "  "])
+def test_ac_14_1_stated_unknown_date_or_place_counts_as_missing(stated):
+    facts = assessment_output(incident_date=stated, location=stated)
+
+    assert (facts.incident_date, facts.location) == (None, None)
+    assert {MissingItem.INCIDENT_DATE, MissingItem.LOCATION} <= set(missing_information(facts))
