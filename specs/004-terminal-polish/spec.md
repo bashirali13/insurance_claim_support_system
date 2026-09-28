@@ -59,3 +59,10 @@ instead of leaving them empty. So the customer was never asked for them.
    `N/A`, `none`, or blank, in any case) for the incident date or location, **When** the facts are
    checked, **Then** that value is treated as missing: it isn't stored, and the missing-information
    checklist asks for it.
+
+## User Story 13 addendum (user review, 2026-09-28)
+
+4. **AC-13.4**: **Given** a new-claim reply with missing information, **When** it is shown,
+   **Then** its last line reads "To add these details, press Enter and choose option 3 from the
+   menu." It no longer says "Choose option 3 anytime", which clashed with the pause prompt that
+   only takes Enter.
