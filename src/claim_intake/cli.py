@@ -78,6 +78,7 @@ def pause() -> None:
     """Keep the reply on screen until the customer is ready (AC-13.1). Typed text is ignored."""
     print()
     input(PAUSE_PROMPT)
+    print()
 
 
 def show_result(result, trace: bool, title: str = "Your claim") -> None:
@@ -141,6 +142,7 @@ def privacy_hold_message(follow_up, today) -> str:
 def add_or_correct(deps: Deps, claim_id: str, trace: bool = False) -> None:
     """Option 3: refuse closed and privacy-review claims before asking for any text."""
     record = deps.store.load(claim_id)
+    print()
     if record.status == ClaimStatus.CLOSED:
         print(framed(UPDATE_TITLE, CLOSED_CLAIM))
         pause()
@@ -149,12 +151,10 @@ def add_or_correct(deps: Deps, claim_id: str, trace: bool = False) -> None:
         print(framed(UPDATE_TITLE, privacy_hold_message(record.follow_up_date, deps.now().date())))
         pause()
         return
-    print()
     text = read_narrative(UPDATE_PROMPT)
     result = update_claim(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
     show_result(result, trace, UPDATE_TITLE)
-    print()
 
 
 def get_help_with_claim(deps: Deps, trace: bool = False) -> None:
@@ -165,7 +165,6 @@ def get_help_with_claim(deps: Deps, trace: bool = False) -> None:
     result = get_help(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
     show_result(result, trace, "Your help request")
-    print()
 
 
 def file_new_claim(deps: Deps, trace: bool = False) -> None:
@@ -174,7 +173,6 @@ def file_new_claim(deps: Deps, trace: bool = False) -> None:
     result = file_claim(read_narrative(), deps, on_progress=print_progress)
     print()
     show_result(result, trace)
-    print()
 
 
 def show_status(deps: Deps, trace: bool = False) -> None:
@@ -183,7 +181,6 @@ def show_status(deps: Deps, trace: bool = False) -> None:
         print()
         print(framed("Your claim status", check_status(claim_id, deps.store, deps.now().date())))
         pause()
-        print()
 
 
 def update_details(deps: Deps, trace: bool = False) -> None:
