@@ -92,7 +92,7 @@ What happens next:
 What we still need from you:            (section omitted when nothing is missing)
   • <customer wording for each MissingItem>
 
-Choose option 3 anytime to add these details.   (only when something is missing)
+To add these details, press Enter and choose option 3 from the menu.   (only when something is missing)
 --------------------------------------------------
 ```
 

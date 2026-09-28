@@ -378,3 +378,10 @@ def test_ac_8_9_help_report_sections_and_notice():
     ]
     positions = [report.index(s) for s in sections]
     assert positions == sorted(positions)
+
+
+def test_ac_13_4_missing_details_line_points_to_the_menu():
+    text = reply_text(assessment=claim_assessment(customer_side_injured=TriState.YES))
+
+    assert "To add these details, press Enter and choose option 3 from the menu." in text
+    assert "anytime" not in text

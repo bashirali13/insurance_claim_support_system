@@ -152,7 +152,7 @@ def render_reply(
     if assessment.missing_information:
         needed = [MISSING_WORDING[item] for item in assessment.missing_information]
         lines += ["", "What we still need from you:", *_bullets(needed)]
-        lines += ["", "Choose option 3 anytime to add these details."]
+        lines += ["", "To add these details, press Enter and choose option 3 from the menu."]
     lines.append(RULE)
     return CustomerReply(text="\n".join(lines))
 

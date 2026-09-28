@@ -22,14 +22,16 @@ from claim_intake.storage import ClaimStore, EventLog, ReportWriter, load_sample
 
 MAX_NARRATIVE_CHARS = 5000
 RULE = "=" * 50
-MENU = f"""{RULE}
+DASH = "-" * 50
+BANNER = f"""{RULE}
  Northstar Auto Insurance: Claim Support
 {RULE}
  Your information is protected. Personal details
  like phone numbers and addresses are removed
  before your claim is processed.
-
- 1. File a new claim
+"""
+SHORT_HEADER = "=== Main menu " + "=" * 36
+MENU = """ 1. File a new claim
  2. Check my claim status
  3. Add or correct details on my claim
  4. Get help with my claim
@@ -59,16 +61,33 @@ HELP_PROMPT = """
 How can we help?
 Press Enter on an empty line when you're done."""
 BAD_CLAIM_NUMBER = "Claim numbers look like CLM-YYYY-NNNN. Please try again."
+UPDATE_TITLE = "Your claim update"
 UNKNOWN_CLAIM = "We couldn't find that claim number. Please check it and try again."
+PAUSE_PROMPT = "Press Enter to return to the menu."
 PROGRESS_WIDTH = 42
 
 
-def show_result(result, trace: bool) -> None:
-    """Print the reply; with --trace, the sanitized staff trace follows (US10)."""
-    print(result.customer_message)
+def framed(title: str, text: str) -> str:
+    """Frame a reply like the new-claim reply (AC-13.3); an already-framed reply is left as is."""
+    if text.startswith(DASH):
+        return text
+    return f"{DASH}\n {title}\n{DASH}\n{text}\n{DASH}"
+
+
+def pause() -> None:
+    """Keep the reply on screen until the customer is ready (AC-13.1). Typed text is ignored."""
+    print()
+    input(PAUSE_PROMPT)
+    print()
+
+
+def show_result(result, trace: bool, title: str = "Your claim") -> None:
+    """Print the framed reply; with --trace, the sanitized staff trace follows (US10)."""
+    print(framed(title, result.customer_message))
     if trace and result.trace:
         print()
         print(render_trace(result.trace))
+    pause()
 
 
 def print_progress(step: int, label: str, total: int = 4) -> None:
@@ -123,18 +142,19 @@ def privacy_hold_message(follow_up, today) -> str:
 def add_or_correct(deps: Deps, claim_id: str, trace: bool = False) -> None:
     """Option 3: refuse closed and privacy-review claims before asking for any text."""
     record = deps.store.load(claim_id)
+    print()
     if record.status == ClaimStatus.CLOSED:
-        print(CLOSED_CLAIM)
+        print(framed(UPDATE_TITLE, CLOSED_CLAIM))
+        pause()
         return
     if record.assessment is None:
-        print(privacy_hold_message(record.follow_up_date, deps.now().date()))
+        print(framed(UPDATE_TITLE, privacy_hold_message(record.follow_up_date, deps.now().date())))
+        pause()
         return
-    print()
     text = read_narrative(UPDATE_PROMPT)
     result = update_claim(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
-    show_result(result, trace)
-    print()
+    show_result(result, trace, UPDATE_TITLE)
 
 
 def get_help_with_claim(deps: Deps, trace: bool = False) -> None:
@@ -144,8 +164,7 @@ def get_help_with_claim(deps: Deps, trace: bool = False) -> None:
     text = read_narrative(HELP_PROMPT)
     result = get_help(claim_id, text, deps, on_progress=partial(print_progress, total=3))
     print()
-    show_result(result, trace)
-    print()
+    show_result(result, trace, "Your help request")
 
 
 def file_new_claim(deps: Deps, trace: bool = False) -> None:
@@ -154,15 +173,14 @@ def file_new_claim(deps: Deps, trace: bool = False) -> None:
     result = file_claim(read_narrative(), deps, on_progress=print_progress)
     print()
     show_result(result, trace)
-    print()
 
 
 def show_status(deps: Deps, trace: bool = False) -> None:
     """Option 2."""
     if claim_id := ask_claim_number(deps):
         print()
-        print(check_status(claim_id, deps.store, deps.now().date()))
-        print()
+        print(framed("Your claim status", check_status(claim_id, deps.store, deps.now().date())))
+        pause()
 
 
 def update_details(deps: Deps, trace: bool = False) -> None:
@@ -188,6 +206,7 @@ def attempt(deps: Deps, action, task: MenuTask | None, trace: bool = False) -> N
         raise  # the terminal closed: handled by safe_run as Exit
     except Exception as exc:
         print(UNEXPECTED_MESSAGE)
+        pause()
         if task is not None:
             try:
                 record_unexpected(deps, task, exc)
@@ -196,7 +215,12 @@ def attempt(deps: Deps, action, task: MenuTask | None, trace: bool = False) -> N
 
 
 def run(deps: Deps, trace: bool = False) -> int:
+    print(BANNER)  # once; every later menu is the short form (AC-13.2)
+    first = True
     while True:
+        if not first:
+            print(SHORT_HEADER)
+        first = False
         print(MENU)
         choice = input("Choose an option (1-5): ").strip()
         if choice in MENU_ACTIONS:

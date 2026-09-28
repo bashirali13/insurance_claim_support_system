@@ -61,7 +61,7 @@ Config lives in `.env` (copy `.env.example`): `OPENROUTER_API_KEY`, `MODEL_NAME`
 ## Git
 
 - **Branches are for big phases only**: `000-project-foundation`, `001-file-a-claim`,
-  `002-existing-claim-support`, `003-hardening-and-release`. Never create branches for single
+  `002-existing-claim-support`, `003-hardening-and-release`, `004-terminal-polish`. Never create branches for single
   documents or sub-features. Use commits.
 - Conventional Commits following the TDD rhythm (`test:` → `feat:` → `refactor:`). End commit
   messages with the Co-Authored-By trailer.

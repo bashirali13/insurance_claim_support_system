@@ -14,6 +14,7 @@ uv run claim-support --load-samples --trace
 - `--trace` shows a short staff view under each reply. It's the easiest way to show *why* the
   system made its choices. Leave it on for the audience, or drop it for a customer-only view.
 - To send text, type or paste it, then press **Enter on an empty line**.
+- After each reply, press **Enter** to return to the menu.
 - New claims get the next free number, starting at `CLM-2026-0007`. Use whatever number the
   app gives you.
 - Dates are real business days from today and skip weekends.
@@ -46,7 +47,7 @@ Point out:
 - A claim number and a short summary of what was recorded.
 - **What we still need from you:** the date, the location, and a police report number (theft and
   vandalism always ask for one).
-- *"Choose option 3 anytime to add these details."*
+- *"To add these details, press Enter and choose option 3 from the menu."*
 - In the trace, `CRITICAL_INFO_MISSING` is set because the date and place are unknown.
 
 **Step 2: check the status.** Choose **2** and enter the new claim number. The status reads

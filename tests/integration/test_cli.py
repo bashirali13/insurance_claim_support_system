@@ -8,7 +8,7 @@ from claim_intake import cli
 from claim_intake.contracts import IntakeLlmOutput, ProcessingStatus, TaskResult, TraceEntry
 from tests.builders import assessment_output, risk_output, summary_output
 from tests.conftest import structured_model
-from tests.integration.conftest import HEADER, make_deps, snapshot
+from tests.integration.conftest import CTRL_C, HEADER, make_deps, snapshot
 
 MENU_OPTIONS = [
     " 1. File a new claim",
@@ -59,11 +59,11 @@ def test_ac_5_1_invalid_choice_shows_hint_and_menu_again(keyboard, capsys):
     _, out = run_app(capsys)
 
     assert out.count("Please choose a number from 1 to 5.") == 1
-    assert out.count(HEADER) == 2
+    assert out.count(" 5. Exit") == 2
 
 
 def test_ac_5_2_multiline_input_ends_on_empty_line(keyboard, filed, capsys):
-    keyboard("1", "I was rear-ended on Main St.", "My bumper is dented.", "", "5")
+    keyboard("1", "I was rear-ended on Main St.", "My bumper is dented.", "", "", "5")
 
     run_app(capsys)
 
@@ -71,7 +71,7 @@ def test_ac_5_2_multiline_input_ends_on_empty_line(keyboard, filed, capsys):
 
 
 def test_ac_5_5_whitespace_only_input_reprompts(keyboard, filed, capsys):
-    keyboard("1", "   ", "Hail dented my hood.", "", "5")
+    keyboard("1", "   ", "Hail dented my hood.", "", "", "5")
 
     _, out = run_app(capsys)
 
@@ -82,7 +82,7 @@ def test_ac_5_5_whitespace_only_input_reprompts(keyboard, filed, capsys):
 def test_ac_5_6_input_over_5000_chars_reprompts_with_limit_message(keyboard, filed, capsys):
     too_long = "a" * 5001
     just_right = "   " + "b" * 5000 + "   "
-    keyboard("1", too_long, "", just_right, "", "5")
+    keyboard("1", too_long, "", just_right, "", "", "5")
 
     _, out = run_app(capsys)
 
@@ -118,7 +118,7 @@ def test_ac_5_12_exit_says_goodbye_and_exits_0(keyboard, capsys):
 
 
 def test_ac_6_1_option_2_prints_status_for_sample_claim(keyboard, sample_deps, capsys):
-    keyboard("2", "clm-2026-0005", "5")
+    keyboard("2", "clm-2026-0005", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -126,9 +126,13 @@ def test_ac_6_1_option_2_prints_status_for_sample_claim(keyboard, sample_deps, c
     assert "Next step:   A claims adjuster will contact you by Friday, Sep 25." in out
 
 
-def test_ac_6_3_claim_number_prompt_shows_the_format_not_a_real_number():
-    # The keyboard fixture replaces input(), so the prompt text is checked directly.
-    assert cli.CLAIM_NUMBER_PROMPT == "Enter your claim number (format CLM-YYYY-NNNN): "
+def test_ac_6_3_claim_number_prompt_shows_the_format_not_a_real_number(keyboard, capsys):
+    keyboard("2", "", "5")
+
+    _, out = run_app(capsys)
+
+    assert "Enter your claim number (format CLM-YYYY-NNNN): " in out
+    assert "CLM-2026-0007" not in out
 
 
 def test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu(
@@ -140,7 +144,7 @@ def test_ac_6_3_malformed_number_hint_then_empty_returns_to_menu(
     _, out = run_app(capsys, sample_deps)
 
     assert "Claim numbers look like CLM-YYYY-NNNN. Please try again." in out
-    assert out.count(HEADER) == 2
+    assert out.count(" 5. Exit") == 2
     assert snapshot(workdirs) == before  # FR-219: no report or event-log line
 
 
@@ -156,7 +160,7 @@ def test_ac_6_8_status_check_calls_no_model_and_writes_nothing(
     keyboard, sample_deps, workdirs, capsys
 ):
     before = snapshot(workdirs)
-    keyboard("2", "CLM-2026-0002", "5")
+    keyboard("2", "CLM-2026-0002", "", "5")
 
     run_app(capsys, sample_deps)
 
@@ -185,7 +189,7 @@ def test_ac_6_9_load_samples_flag_reports_count_then_shows_menu(
 def test_ac_7_7_closed_claim_update_is_refused_without_asking_for_text(
     keyboard, sample_deps, capsys
 ):
-    keyboard("3", "CLM-2026-0004", "5")  # no narrative lines supplied: none may be requested
+    keyboard("3", "CLM-2026-0004", "", "5")  # no narrative lines supplied: none may be requested
 
     _, out = run_app(capsys, sample_deps)
 
@@ -210,7 +214,7 @@ def test_ac_7_12_privacy_review_claim_update_is_refused(
     sample_deps.store.save(
         record.model_copy(update={"follow_up_date": date.fromisoformat(follow_up)})
     )
-    keyboard("3", "CLM-2026-0006", "5")
+    keyboard("3", "CLM-2026-0006", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -232,7 +236,7 @@ def test_ac_7_1_option_3_flow_prints_update_reply(keyboard, sample_deps, monkeyp
         )
 
     monkeypatch.setattr(cli, "update_claim", fake_update_claim)
-    keyboard("3", "CLM-2026-0005", "The police report number is 26-44817.", "", "5")
+    keyboard("3", "CLM-2026-0005", "The police report number is 26-44817.", "", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -263,7 +267,7 @@ def helped(monkeypatch):
 
 
 def test_ac_8_11_enter_continues_without_claim_number(keyboard, sample_deps, helped, capsys):
-    keyboard("4", "", "Nobody called me back.", "", "5")
+    keyboard("4", "", "Nobody called me back.", "", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -281,7 +285,7 @@ def test_ac_8_11_enter_continues_without_claim_number(keyboard, sample_deps, hel
 def test_ac_8_11_unknown_or_malformed_number_hint_with_skip_option(
     entry, message, keyboard, sample_deps, helped, capsys
 ):
-    keyboard("4", entry, "CLM-2026-0005", "When will someone call?", "", "5")
+    keyboard("4", entry, "CLM-2026-0005", "When will someone call?", "", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -290,7 +294,7 @@ def test_ac_8_11_unknown_or_malformed_number_hint_with_skip_option(
 
 
 def test_ac_8_1_option_4_flow_prints_help_reply(keyboard, sample_deps, helped, capsys):
-    keyboard("4", "CLM-2026-0005", "I'd like to speak to my adjuster.", "", "5")
+    keyboard("4", "CLM-2026-0005", "I'd like to speak to my adjuster.", "", "", "5")
 
     _, out = run_app(capsys, sample_deps)
 
@@ -347,3 +351,149 @@ def test_ac_10_5_trace_is_never_written_to_disk(keyboard, workdirs, fixed_now, c
     for path in workdirs.rglob("*"):
         if path.is_file():
             assert "trace ─" not in path.read_text(encoding="utf-8")
+
+
+# --- Phase 004: the reply stays in focus (US13) ---------------------------------------------
+
+PAUSE = "Press Enter to return to the menu."
+DASH = "-" * 50
+EXIT_OPTION = " 5. Exit"
+
+
+def canned(message="(reply)"):
+    """A stand-in for any flow: returns a fixed reply without touching agents."""
+    return lambda *args, **kwargs: TaskResult(
+        processing_status=ProcessingStatus.COMPLETED,
+        claim_id="CLM-2026-0005",
+        customer_message=message,
+        report_path=None,
+    )
+
+
+def frame(title):
+    return f"{DASH}\n {title}\n{DASH}\n"
+
+
+REPLY_SCRIPTS = {
+    "new claim": (["1", "Rear-ended on Main St.", ""], "file_claim"),
+    "update": (["3", "CLM-2026-0005", "Police report 26-44817.", ""], "update_claim"),
+    "help": (["4", "CLM-2026-0005", "Nobody called me back.", ""], "get_help"),
+}
+
+
+@pytest.mark.parametrize("task", REPLY_SCRIPTS)
+def test_ac_13_1_pause_follows_the_reply_before_the_menu_returns(
+    task, keyboard, sample_deps, monkeypatch, capsys
+):
+    script, flow = REPLY_SCRIPTS[task]
+    monkeypatch.setattr(cli, flow, canned())
+    keyboard(*script, "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert out.index("(reply)") < out.index(PAUSE) < out.rindex(EXIT_OPTION)
+
+
+def test_ac_13_1_pause_follows_a_status_reply(keyboard, sample_deps, capsys):
+    keyboard("2", "CLM-2026-0005", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert out.index("Claim CLM-2026-0005") < out.index(PAUSE)
+
+
+def test_ac_13_1_pause_follows_the_unexpected_error_message(keyboard, monkeypatch, capsys):
+    def broken(*args, **kwargs):
+        raise ZeroDivisionError("bug")
+
+    monkeypatch.setattr(cli, "file_claim", broken)
+    keyboard("1", "Rear-ended on Main St.", "", "", "5")
+
+    _, out = run_app(capsys)
+
+    assert out.index(cli.UNEXPECTED_MESSAGE) < out.index(PAUSE)
+
+
+def test_ac_13_1_no_pause_when_nothing_was_shown(keyboard, sample_deps, capsys):
+    keyboard("2", "", "9", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert PAUSE not in out
+
+
+def test_ac_13_1_text_typed_at_the_pause_is_ignored(keyboard, filed, capsys):
+    keyboard("1", "Rear-ended on Main St.", "", "1", "5")
+
+    code, _ = run_app(capsys)
+
+    assert code == 0
+    assert filed == ["Rear-ended on Main St."]
+
+
+@pytest.mark.parametrize(("last_key", "exit_code"), [(None, 0), ("ctrl_c", 130)])
+def test_ac_13_1_end_of_input_or_ctrl_c_at_the_pause_exits_as_usual(
+    last_key, exit_code, keyboard, filed, capsys
+):
+    script = ["1", "Rear-ended on Main St.", ""]
+    keyboard(*script, *([CTRL_C] if last_key else []))
+
+    code = cli.safe_run(None)
+
+    assert code == exit_code
+    assert PAUSE in capsys.readouterr().out
+
+
+def test_ac_13_2_banner_shows_once_then_the_short_menu(keyboard, capsys):
+    keyboard("9", "5")
+
+    _, out = run_app(capsys)
+
+    assert out.count(HEADER) == 1
+    assert out.count(" Your information is protected.") == 1
+    assert out.count(EXIT_OPTION) == 2
+    assert "Main menu" in out.split(HEADER, 1)[1]
+
+
+@pytest.mark.parametrize(
+    ("task", "title"),
+    [("update", "Your claim update"), ("help", "Your help request")],
+)
+def test_ac_13_3_update_and_help_replies_are_framed_with_a_title(
+    task, title, keyboard, sample_deps, monkeypatch, capsys
+):
+    script, flow = REPLY_SCRIPTS[task]
+    monkeypatch.setattr(cli, flow, canned())
+    keyboard(*script, "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert f"{frame(title)}(reply)\n{DASH}\n" in out
+
+
+def test_ac_13_3_status_reply_is_framed_with_a_title(keyboard, sample_deps, capsys):
+    keyboard("2", "CLM-2026-0005", "", "5")
+
+    _, out = run_app(capsys, sample_deps)
+
+    assert f"{frame('Your claim status')}Claim CLM-2026-0005" in out
+
+
+def test_ac_13_3_other_filing_outcomes_are_framed_as_your_claim(keyboard, monkeypatch, capsys):
+    monkeypatch.setattr(cli, "file_claim", canned("We're sorry, something went wrong."))
+    keyboard("1", "Rear-ended on Main St.", "", "", "5")
+
+    _, out = run_app(capsys)
+
+    assert f"{frame('Your claim')}We're sorry, something went wrong.\n{DASH}\n" in out
+
+
+def test_ac_13_3_an_already_framed_reply_is_not_framed_twice(keyboard, monkeypatch, capsys):
+    reply = f"{DASH}\n Your claim number: CLM-2026-0007\n{DASH}\nRecorded.\n{DASH}"
+    monkeypatch.setattr(cli, "file_claim", canned(reply))
+    keyboard("1", "Rear-ended on Main St.", "", "", "5")
+
+    _, out = run_app(capsys)
+
+    assert f"{reply}\n" in out
+    assert " Your claim\n" not in out
