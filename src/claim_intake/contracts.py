@@ -4,7 +4,7 @@ from datetime import date, datetime
 from enum import StrEnum
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class Contract(BaseModel):
@@ -118,6 +118,9 @@ class Contradiction(Contract):
     about_injury: bool
 
 
+STATED_UNKNOWN = {"", "unknown", "not provided", "n/a", "none"}
+
+
 class AssessmentLlmOutput(Contract):
     """What the assessment model may judge. Everything else is added by rules."""
 
@@ -134,6 +137,14 @@ class AssessmentLlmOutput(Contract):
     police_report_mentioned: TriState
     key_facts: list[str]
     contradictions: list[Contradiction]
+
+    @field_validator("incident_date", "location", mode="before")
+    @classmethod
+    def stated_unknown_is_missing(cls, value):
+        """A model may write "UNKNOWN" instead of leaving a fact empty (AC-14.1)."""
+        if isinstance(value, str) and value.strip().lower() in STATED_UNKNOWN:
+            return None
+        return value
 
 
 class ClaimAssessment(AssessmentLlmOutput):
