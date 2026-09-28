@@ -143,7 +143,7 @@ What we still need from you:
   • Police report number (important for hit-and-run claims)
   • Description of the other vehicle, if you remember anything
 
-Choose option 3 anytime to add these details.
+To add these details, press Enter and choose option 3 from the menu.
 --------------------------------------------------
 ```
 

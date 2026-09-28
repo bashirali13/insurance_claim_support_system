@@ -12,5 +12,5 @@ All work is in `src/claim_intake/cli.py` and `tests/integration/test_cli.py`. Re
 - [X] T005 [US14] Red: `test_ac_14_1_stated_unknown_date_or_place_counts_as_missing` in
   `tests/unit/test_rules.py`. Green: normalize stated-unknown date and location to empty in
   `AssessmentLlmOutput`.
-- [ ] T006 [US13] Red → Green for AC-13.4 (`render_reply` last line); update the UX doc, CLI
+- [X] T006 [US13] Red → Green for AC-13.4 (`render_reply` last line); update the UX doc, CLI
   contract, demo script, and the S10 sample.
