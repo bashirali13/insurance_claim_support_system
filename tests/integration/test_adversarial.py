@@ -194,7 +194,7 @@ def test_ac_11_1_filing_scenario_is_customer_safe_and_routed(name, workdirs, fix
 def test_ac_11_1_input_at_5000_chars_is_accepted_and_5001_rejected(keyboard, monkeypatch, capsys):
     sent = []
     monkeypatch.setattr(cli, "file_claim", lambda text, deps, on_progress=None: sent.append(text))
-    monkeypatch.setattr(cli, "show_result", lambda result, trace: None)
+    monkeypatch.setattr(cli, "show_result", lambda *args: None)
     keyboard("1", "x" * 5001, "", "y" * 5000, "", "5")
 
     cli.safe_run(None)
