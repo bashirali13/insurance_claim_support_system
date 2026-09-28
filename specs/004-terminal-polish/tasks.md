@@ -7,7 +7,7 @@ All work is in `src/claim_intake/cli.py` and `tests/integration/test_cli.py`. Re
   titles; the new-claim reply isn't double-framed). Update existing scripts and banner counts.
 - [X] T002 [US13] Green: `pause()`, `BANNER` + `SHORT_MENU`, and `framed(title, text)` in the CLI.
 - [X] T003 Update `docs/user-experience.md` (§3 to §7 screens) and `specs/002-existing-claim-support/contracts/cli.md`.
-- [ ] T004 Final ruff and pytest, a real terminal check, prompt history 09, PR, and the
+- [X] T004 Final ruff and pytest, a real terminal check, prompt history 09, PR, and the
   phase-completion check.
 - [X] T005 [US14] Red: `test_ac_14_1_stated_unknown_date_or_place_counts_as_missing` in
   `tests/unit/test_rules.py`. Green: normalize stated-unknown date and location to empty in
